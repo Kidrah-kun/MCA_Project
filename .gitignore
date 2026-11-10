@@ -1,0 +1,17 @@
+# Simulation outputs
+*.vcd
+*.lxt
+*.vvp
+*.out
+sim/waveforms/*.vcd
+
+# Compiled objects
+*.o
+*.d
+
+# macOS
+.DS_Store
+
+# Editor
+.vscode/
+*.swp
