@@ -4,10 +4,9 @@
 // Author: Akshith Kumar (Group Member 4)
 // Role: Main Memory Module
 //
-// Description: Initial 256x32 DRAM model acting as backing store
-//   for the memory hierarchy. Parameterized depth and latency,
-//   with pre-loaded test memory map and simple synchronous
-//   read/write access (zero-latency model before controller addition).
+// Description: Main memory DRAM model with request latching.
+//   Captures incoming memory requests using internal state registers
+//   to decouple request initiation from service execution.
 // ============================================================
 
 `timescale 1ns / 1ps
@@ -25,11 +24,11 @@ module main_memory #(
     input  wire [ADDR_WIDTH-1:0] addr,
     input  wire                  we,
     input  wire [DATA_WIDTH-1:0] wr_data,
-    input  wire                  req,
+    input  wire                  req,       // Pulse high for 1 cycle to start request
 
     // Response
     output reg  [DATA_WIDTH-1:0] rd_data,
-    output reg                   ready
+    output reg                   ready     // Pulses high when read data is valid
 );
 
     // ============================================================
@@ -50,6 +49,12 @@ module main_memory #(
     // Memory array
     reg [DATA_WIDTH-1:0] mem [0:DEPTH-1];
 
+    // Request latching registers
+    reg                  pending;
+    reg [ADDR_WIDTH-1:0] pending_addr;
+    reg                  pending_we;
+    reg [DATA_WIDTH-1:0] pending_wr_data;
+
     integer i;
     initial begin
         for (i = 0; i < DEPTH; i = i + 1)
@@ -66,19 +71,33 @@ module main_memory #(
         mem[7] = 32'h0000001E; // 30
     end
 
-    // Simple zero-latency synchronous always block (no latency controller yet)
     always @(posedge clk or posedge rst) begin
         if (rst) begin
-            rd_data <= {DATA_WIDTH{1'b0}};
-            ready   <= 1'b0;
+            ready           <= 1'b0;
+            pending         <= 1'b0;
+            rd_data         <= {DATA_WIDTH{1'b0}};
+            pending_addr    <= {ADDR_WIDTH{1'b0}};
+            pending_we      <= 1'b0;
+            pending_wr_data <= {DATA_WIDTH{1'b0}};
         end else begin
             ready <= 1'b0;
-            if (req) begin
-                ready <= 1'b1;
-                if (we) begin
-                    mem[addr] <= wr_data;
+
+            // Latch incoming memory request
+            if (req && !pending) begin
+                pending         <= 1'b1;
+                pending_addr    <= addr;
+                pending_we      <= we;
+                pending_wr_data <= wr_data;
+            end
+
+            // Process latched request
+            if (pending) begin
+                pending <= 1'b0;
+                if (pending_we) begin
+                    mem[pending_addr] <= pending_wr_data;
                 end else begin
-                    rd_data   <= mem[addr];
+                    rd_data <= mem[pending_addr];
+                    ready   <= 1'b1;
                 end
             end
         end
