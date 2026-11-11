@@ -15,3 +15,4 @@ sim/waveforms/*.vcd
 # Editor
 .vscode/
 *.swp
+

@@ -1,90 +1,108 @@
 // ============================================================
-// Module: Cache Controller (Direct-Mapped, Write-Through)
+// Module: Cache Arbiter / Controller
 // Project: Instruction and Data Memory Hierarchy
-// Description: Implements a direct-mapped cache with 16 lines,
-//              each holding a 32-bit data word. On a miss, data
-//              is fetched from main memory. Write-through policy
-//              ensures main memory is always updated on writes.
+// Member: Member 3
 //
-//  Address breakdown (8-bit):
-//    [7:4] — Tag      (4 bits)
-//    [3:0] — Index    (4 bits → 16 cache lines)
+// Description: Arbitrates between L1 I-Cache and D-Cache miss
+//   requests to the shared main memory bus. D-Cache gets
+//   priority over I-Cache. Issues read/write requests to main
+//   memory and returns data to the requesting cache.
+//
+//   States:
+//     IDLE      — no pending miss
+//     SERVE_D   — serving D-cache miss (higher priority)
+//     SERVE_I   — serving I-cache miss
+//     WAIT_MEM  — waiting for main memory to respond
 // ============================================================
 
 module cache_controller (
     input  wire        clk,
     input  wire        rst,
-    input  wire        cpu_we,       // CPU write enable
-    input  wire [7:0]  cpu_addr,     // CPU address
-    input  wire [31:0] cpu_wr_data,  // CPU write data
-    input  wire [31:0] mem_rd_data,  // Data returned from main memory
 
-    output reg  [31:0] cpu_rd_data,  // Data returned to CPU
-    output reg         mem_we,       // Write enable to main memory
-    output reg  [7:0]  mem_addr,     // Address sent to main memory
-    output reg  [31:0] mem_wr_data,  // Data sent to main memory
-    output reg         cache_hit,    // Hit indicator (for monitoring)
-    output reg         cache_miss    // Miss indicator (for monitoring)
+    // From L1 I-Cache
+    input  wire        icache_req,
+    input  wire [7:0]  icache_addr,
+    output reg  [31:0] icache_data,
+    output reg         icache_ready,
+
+    // From L1 D-Cache
+    input  wire        dcache_req,
+    input  wire        dcache_we,
+    input  wire [7:0]  dcache_addr,
+    input  wire [31:0] dcache_wr_data,
+    output reg  [31:0] dcache_data,
+    output reg         dcache_ready,
+
+    // To Main Memory
+    output reg  [7:0]  mem_addr,
+    output reg         mem_we,
+    output reg  [31:0] mem_wr_data,
+    input  wire [31:0] mem_rd_data,
+    input  wire        mem_ready
 );
 
-    // Cache storage
-    reg [31:0] cache_data  [0:15];  // Data store
-    reg [3:0]  cache_tag   [0:15];  // Tag store
-    reg        cache_valid [0:15];  // Valid bits
+    // FSM states
+    localparam IDLE     = 2'b00;
+    localparam SERVE_D  = 2'b01;
+    localparam SERVE_I  = 2'b10;
+    localparam WAIT_MEM = 2'b11;
 
-    wire [3:0] tag   = cpu_addr[7:4];
-    wire [3:0] index = cpu_addr[3:0];
+    reg [1:0] state, next_state;
 
-    integer i;
-    initial begin
-        for (i = 0; i < 16; i = i + 1) begin
-            cache_valid[i] = 1'b0;
-            cache_tag[i]   = 4'b0;
-            cache_data[i]  = 32'b0;
-        end
+    // State register
+    always @(posedge clk or posedge rst) begin
+        if (rst) state <= IDLE;
+        else      state <= next_state;
     end
 
-    always @(posedge clk or posedge rst) begin
-        if (rst) begin
-            cache_hit  <= 0;
-            cache_miss <= 0;
-            mem_we     <= 0;
-            for (i = 0; i < 16; i = i + 1)
-                cache_valid[i] <= 1'b0;
-        end else begin
-            mem_we     <= 0;
-            cache_hit  <= 0;
-            cache_miss <= 0;
+    // Next-state + output logic
+    always @(*) begin
+        // Defaults
+        next_state    = state;
+        icache_ready  = 0;
+        dcache_ready  = 0;
+        icache_data   = 32'b0;
+        dcache_data   = 32'b0;
+        mem_addr      = 8'b0;
+        mem_we        = 0;
+        mem_wr_data   = 32'b0;
 
-            // --- READ ---
-            if (!cpu_we) begin
-                if (cache_valid[index] && (cache_tag[index] == tag)) begin
-                    // HIT
-                    cache_hit    <= 1;
-                    cpu_rd_data  <= cache_data[index];
-                end else begin
-                    // MISS — fetch from main memory
-                    cache_miss          <= 1;
-                    mem_addr            <= cpu_addr;
-                    cpu_rd_data         <= mem_rd_data;
-                    cache_data[index]   <= mem_rd_data;
-                    cache_tag[index]    <= tag;
-                    cache_valid[index]  <= 1'b1;
+        case (state)
+            IDLE: begin
+                if (dcache_req) begin
+                    // D-Cache has priority
+                    mem_addr    = dcache_addr;
+                    mem_we      = dcache_we;
+                    mem_wr_data = dcache_wr_data;
+                    next_state  = dcache_we ? IDLE : SERVE_D;
+                    if (dcache_we) dcache_ready = 1; // Writes complete in 1 cycle
+                end else if (icache_req) begin
+                    mem_addr   = icache_addr;
+                    mem_we     = 0;
+                    next_state = SERVE_I;
                 end
             end
 
-            // --- WRITE (Write-Through) ---
-            if (cpu_we) begin
-                // Update cache
-                cache_data[index]  <= cpu_wr_data;
-                cache_tag[index]   <= tag;
-                cache_valid[index] <= 1'b1;
-                // Always write through to main memory
-                mem_we      <= 1;
-                mem_addr    <= cpu_addr;
-                mem_wr_data <= cpu_wr_data;
+            SERVE_D: begin
+                mem_addr = dcache_addr;
+                if (mem_ready) begin
+                    dcache_data  = mem_rd_data;
+                    dcache_ready = 1;
+                    next_state   = IDLE;
+                end
             end
-        end
+
+            SERVE_I: begin
+                mem_addr = icache_addr;
+                if (mem_ready) begin
+                    icache_data  = mem_rd_data;
+                    icache_ready = 1;
+                    next_state   = IDLE;
+                end
+            end
+
+            default: next_state = IDLE;
+        endcase
     end
 
 endmodule

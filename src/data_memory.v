@@ -37,3 +37,4 @@ module data_memory (
     assign rd_data = mem[addr];
 
 endmodule
+
