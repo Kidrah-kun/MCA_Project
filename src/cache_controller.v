@@ -65,13 +65,88 @@ module cache_controller (
     localparam [1:0] SERVE_D = 2'b01;   // Serving D-cache miss (high priority)
     localparam [1:0] SERVE_I = 2'b10;   // Serving I-cache miss
 
-    reg [1:0] state;
+    reg [1:0] state, next_state;
 
     // ----------------------------------------------------------
-    // Sequential state register (always block — to be filled)
+    // Sequential state register
     // ----------------------------------------------------------
     always @(posedge clk or posedge rst) begin
-        // TODO: implement state transitions
+        if (rst) state <= IDLE;
+        else      state <= next_state;
+    end
+
+    // ----------------------------------------------------------
+    // Combinational: next-state logic + output logic
+    // D-Cache has PRIORITY over I-Cache in IDLE arbitration.
+    // ----------------------------------------------------------
+    always @(*) begin
+        // Safe defaults — prevents latches
+        next_state   = state;
+        icache_ready = 1'b0;
+        dcache_ready = 1'b0;
+        icache_data  = 32'b0;
+        dcache_data  = 32'b0;
+        mem_addr     = 8'b0;
+        mem_we       = 1'b0;
+        mem_wr_data  = 32'b0;
+
+        case (state)
+
+            // --------------------------------------------------
+            // IDLE: Arbitrate between pending miss requests.
+            //       D-Cache always wins if both request together.
+            // --------------------------------------------------
+            IDLE: begin
+                if (dcache_req) begin
+                    // --- D-Cache has priority ---
+                    mem_addr    = dcache_addr;
+                    mem_we      = dcache_we;
+                    mem_wr_data = dcache_wr_data;
+                    if (dcache_we) begin
+                        // Write completes in 1 cycle — stay IDLE
+                        dcache_ready = 1'b1;
+                        next_state   = IDLE;
+                    end else begin
+                        // Read miss — go wait for memory
+                        next_state   = SERVE_D;
+                    end
+                end else if (icache_req) begin
+                    // --- I-Cache (lower priority, only when D quiet) ---
+                    mem_addr   = icache_addr;
+                    mem_we     = 1'b0;
+                    next_state = SERVE_I;
+                end
+                // else: nothing pending — stay IDLE
+            end
+
+            // --------------------------------------------------
+            // SERVE_D: Wait for main memory to supply D-cache data.
+            // --------------------------------------------------
+            SERVE_D: begin
+                mem_addr = dcache_addr;
+                mem_we   = 1'b0;
+                if (mem_ready) begin
+                    dcache_data  = mem_rd_data;
+                    dcache_ready = 1'b1;
+                    next_state   = IDLE;
+                end
+            end
+
+            // --------------------------------------------------
+            // SERVE_I: Wait for main memory to supply I-cache data.
+            // --------------------------------------------------
+            SERVE_I: begin
+                mem_addr = icache_addr;
+                mem_we   = 1'b0;
+                if (mem_ready) begin
+                    icache_data  = mem_rd_data;
+                    icache_ready = 1'b1;
+                    next_state   = IDLE;
+                end
+            end
+
+            default: next_state = IDLE;
+        endcase
     end
 
 endmodule
