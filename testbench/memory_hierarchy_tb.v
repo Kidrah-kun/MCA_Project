@@ -57,7 +57,17 @@ module memory_hierarchy_tb;
         repeat(2) @(posedge clk); #1;
         rst = 0;
 
-        // TODO: Add test cases for I-Cache and D-Cache
+        // ---- T1: I-Cache first fetch addr=0 — expect MISS (cold cache) ----
+        if_addr = 8'd0; d_we = 0; d_addr = 8'd5;
+        repeat(6) @(posedge clk); #1;
+        $display("[T1] ICache fetch addr=0: instr=0x%08X stall=%b hit=%b miss=%b",
+                  if_instr, if_stall, icache_hit, icache_miss);
+
+        // ---- T2: I-Cache same addr=0 again — expect HIT, no stall ----
+        @(posedge clk); #1;
+        $display("[T2] ICache fetch addr=0 again: hit=%b miss=%b", icache_hit, icache_miss);
+
+        // TODO: Add D-Cache tests
 
         #20;
         $display("=== Testbench complete ===");
