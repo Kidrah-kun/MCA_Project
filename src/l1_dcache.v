@@ -52,7 +52,7 @@ module l1_dcache (
         end
     end
 
-    // Sequential logic (to be implemented)
+    // Sequential logic (reads implemented, writes pending)
     always @(posedge clk or posedge rst) begin
         if (rst) begin
             hit       <= 0;
@@ -69,7 +69,30 @@ module l1_dcache (
             mem_we    <= 0;
             mem_req   <= 0;
 
-            // TODO: Read and write logic
+            if (!cpu_we) begin
+                // --- READ ---
+                if (cache_valid[index] && cache_tag[index] == tag) begin
+                    // HIT
+                    hit         <= 1;
+                    cpu_rd_data <= cache_data[index];
+                end else begin
+                    // MISS — fetch from main memory
+                    miss      <= 1;
+                    cpu_stall <= 1;
+                    mem_req   <= 1;
+                    mem_addr  <= cpu_addr;
+
+                    if (mem_ready) begin
+                        cache_data[index]  <= mem_data;
+                        cache_tag[index]   <= tag;
+                        cache_valid[index] <= 1'b1;
+                        cpu_rd_data        <= mem_data;
+                        cpu_stall          <= 0;
+                    end
+                end
+            end else begin
+                // TODO: Write logic to be implemented
+            end
         end
     end
 
