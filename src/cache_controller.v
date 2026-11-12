@@ -55,7 +55,10 @@ module cache_controller (
     output reg         mem_we,           // Write-enable to main memory
     output reg  [31:0] mem_wr_data,      // Write data to main memory
     input  wire [31:0] mem_rd_data,      // Read data from main memory
-    input  wire        mem_ready         // Memory data-ready strobe
+    input  wire        mem_ready,        // Memory data-ready strobe
+
+    // --- Status / Performance monitoring ---
+    output wire        busy              // HIGH whenever FSM is not in IDLE
 );
 
     // ----------------------------------------------------------
@@ -66,6 +69,28 @@ module cache_controller (
     localparam [1:0] SERVE_I = 2'b10;   // Serving I-cache miss
 
     reg [1:0] state, next_state;
+
+    // ----------------------------------------------------------
+    // busy output — asserted whenever the FSM is not idle
+    // ----------------------------------------------------------
+    assign busy = (state != IDLE);
+
+    // ----------------------------------------------------------
+    // Performance monitoring counters (synthesisable registers)
+    // Reset on rst; wrap naturally on overflow.
+    // ----------------------------------------------------------
+    reg [31:0] dcache_req_count;   // Total D-cache miss requests served
+    reg [31:0] icache_req_count;   // Total I-cache miss requests served
+
+    always @(posedge clk or posedge rst) begin
+        if (rst) begin
+            dcache_req_count <= 32'd0;
+            icache_req_count <= 32'd0;
+        end else begin
+            if (dcache_ready) dcache_req_count <= dcache_req_count + 1;
+            if (icache_ready) icache_req_count <= icache_req_count + 1;
+        end
+    end
 
     // ----------------------------------------------------------
     // Sequential state register
