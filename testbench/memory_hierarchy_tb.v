@@ -48,6 +48,22 @@ module memory_hierarchy_tb;
     initial clk = 0;
     always #5 clk = ~clk;
 
+    // ------- Pass / Fail checker -------
+    integer pass_count = 0, fail_count = 0;
+    task check;
+        input [31:0] got, expected;
+        input [7:0]  tid;
+        begin
+            if (got === expected) begin
+                $display("[PASS] Test %0d: 0x%08X", tid, got);
+                pass_count = pass_count + 1;
+            end else begin
+                $display("[FAIL] Test %0d: expected 0x%08X, got 0x%08X", tid, expected, got);
+                fail_count = fail_count + 1;
+            end
+        end
+    endtask
+
     // ------- Main stimulus -------
     initial begin
         $display("=== Memory Hierarchy Testbench ===");
@@ -67,7 +83,27 @@ module memory_hierarchy_tb;
         @(posedge clk); #1;
         $display("[T2] ICache fetch addr=0 again: hit=%b miss=%b", icache_hit, icache_miss);
 
-        // TODO: Add D-Cache tests
+        // ---- T3: D-Cache read miss (addr=5, expect 0x0000000A) ----
+        d_addr = 8'd5; d_we = 0;
+        repeat(6) @(posedge clk); #1;
+        $display("[T3] DCache read addr=5: data=0x%08X hit=%b miss=%b",
+                  d_rd_data, dcache_hit, dcache_miss);
+
+        // ---- T4: D-Cache read hit (same addr=5 again) ----
+        @(posedge clk); #1;
+        $display("[T4] DCache read addr=5 (hit): hit=%b miss=%b", dcache_hit, dcache_miss);
+
+        // ---- T5: D-Cache write addr=2, data=0xBEEFCAFE (write-through) ----
+        d_we = 1; d_addr = 8'd2; d_wr_data = 32'hBEEFCAFE;
+        @(posedge clk); #1;
+        d_we = 0;
+        $display("[T5] DCache write addr=2: 0xBEEFCAFE");
+
+        // ---- T6: Read back addr=2 — verify write-through worked ----
+        d_addr = 8'd2;
+        @(posedge clk); #1;
+        $display("[T6] DCache read addr=2 after write: data=0x%08X hit=%b", d_rd_data, dcache_hit);
+        check(d_rd_data, 32'hBEEFCAFE, 6);
 
         #20;
         $display("=== Testbench complete ===");
