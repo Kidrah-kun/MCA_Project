@@ -1,12 +1,12 @@
 // ============================================================
-// Module: Main Memory (main_memory)
+// Module: Main Memory Controller (main_memory)
 // Project: Instruction and Data Memory Hierarchy (MCA Project)
 // Author: Akshith Kumar (Group Member 4)
 // Role: Main Memory Module
 //
-// Description: Main memory DRAM model with request latching.
-//   Captures incoming memory requests using internal state registers
-//   to decouple request initiation from service execution.
+// Description: 256x32-bit main memory with a DRAM memory controller
+//   simulating realistic 3-cycle access latency. Uses a request/ready
+//   handshake interface, counts latency cycles, and tracks total accesses.
 // ============================================================
 
 `timescale 1ns / 1ps
@@ -49,11 +49,15 @@ module main_memory #(
     // Memory array
     reg [DATA_WIDTH-1:0] mem [0:DEPTH-1];
 
-    // Request latching registers
+    // Latency controller registers
+    reg [1:0]            delay_cnt;
     reg                  pending;
     reg [ADDR_WIDTH-1:0] pending_addr;
     reg                  pending_we;
     reg [DATA_WIDTH-1:0] pending_wr_data;
+
+    // Performance access counter
+    reg [31:0]           access_count;
 
     integer i;
     initial begin
@@ -69,35 +73,47 @@ module main_memory #(
         mem[5] = 32'h0000000A; // 10
         mem[6] = 32'h00000014; // 20
         mem[7] = 32'h0000001E; // 30
+
+        access_count = 32'd0;
     end
 
+    // Sequential 3-cycle DRAM latency controller
     always @(posedge clk or posedge rst) begin
         if (rst) begin
             ready           <= 1'b0;
             pending         <= 1'b0;
+            delay_cnt       <= 2'd0;
             rd_data         <= {DATA_WIDTH{1'b0}};
             pending_addr    <= {ADDR_WIDTH{1'b0}};
             pending_we      <= 1'b0;
             pending_wr_data <= {DATA_WIDTH{1'b0}};
+            access_count    <= 32'd0;
         end else begin
-            ready <= 1'b0;
+            ready <= 1'b0; // Default: not ready
 
-            // Latch incoming memory request
+            // Latch new request via handshake
             if (req && !pending) begin
                 pending         <= 1'b1;
                 pending_addr    <= addr;
                 pending_we      <= we;
                 pending_wr_data <= wr_data;
+                delay_cnt       <= 2'd0;
             end
 
-            // Process latched request
+            // Count down 3-cycle latency
             if (pending) begin
-                pending <= 1'b0;
-                if (pending_we) begin
-                    mem[pending_addr] <= pending_wr_data;
+                if (delay_cnt == LATENCY - 1) begin
+                    // Service request upon latency expiration
+                    pending      <= 1'b0;
+                    access_count <= access_count + 1;
+                    if (pending_we) begin
+                        mem[pending_addr] <= pending_wr_data;
+                    end else begin
+                        rd_data <= mem[pending_addr];
+                        ready   <= 1'b1;
+                    end
                 end else begin
-                    rd_data <= mem[pending_addr];
-                    ready   <= 1'b1;
+                    delay_cnt <= delay_cnt + 1;
                 end
             end
         end
