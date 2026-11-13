@@ -25,13 +25,11 @@ This project implements a **complete Instruction and Data Memory Hierarchy** in 
 
 | Name | GitHub | Role |
 |------|--------|------|
-| Member 1 | [@Kidrah-kun](https://github.com/Kidrah-kun) | Instruction Memory & Cache Design |
-| Member 2 | — | Data Memory Module |
-| Member 3 | — | Cache Controller |
-| Member 4 | — | Main Memory Module |
-| Member 5 | — | Testbench & Integration |
-
-> 📝 *Update this table with all 5 group members' names and GitHub usernames.*
+| Hardik Hathwal | [@Kidrah-kun](https://github.com/Kidrah-kun) | Instruction Memory & Cache Design |
+| Kabir Sharma | — | Data Memory Module |
+| Abhinav Chaudhary | — | Cache Controller |
+| Akshith Kumar | — | Main Memory Module |
+| Ayush Tiwari | — | Testbench & Integration |
 
 ---
 
