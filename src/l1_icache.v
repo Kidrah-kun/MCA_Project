@@ -10,7 +10,11 @@
 //   - 8-bit address: [7:5] tag | [4:2] index | [1:0] offset(unused)
 // ============================================================
 
-module l1_icache (
+module l1_icache #(
+    parameter CACHE_LINES = 8,   // Number of cache lines (must be power of 2)
+    parameter ADDR_WIDTH  = 8,   // CPU address width in bits
+    parameter DATA_WIDTH  = 32   // Data word width in bits
+) (
     input  wire        clk,
     input  wire        rst,
 
