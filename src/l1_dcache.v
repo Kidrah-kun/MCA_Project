@@ -104,4 +104,26 @@ module l1_dcache (
         end
     end
 
+    // ---- Performance Counters (simulation only) ----
+    reg [15:0] hit_count;
+    reg [15:0] miss_count;
+
+    initial begin
+        hit_count  = 0;
+        miss_count = 0;
+    end
+
+    // synthesis translate_off
+    always @(posedge clk) begin
+        if (hit)  hit_count  <= hit_count  + 1;
+        if (miss) miss_count <= miss_count + 1;
+    end
+
+    always @(posedge clk) begin
+        if (hit)    $display("[D-Cache] HIT   addr=0x%02X data=0x%08X", cpu_addr, cpu_rd_data);
+        if (miss)   $display("[D-Cache] MISS  addr=0x%02X — fetching from memory", cpu_addr);
+        if (cpu_we) $display("[D-Cache] WRITE addr=0x%02X data=0x%08X (write-through)", cpu_addr, cpu_wr_data);
+    end
+    // synthesis translate_on
+
 endmodule
