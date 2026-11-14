@@ -6,7 +6,9 @@
 //
 // Description: 256x32-bit main memory with a DRAM memory controller
 //   simulating realistic 3-cycle access latency. Uses a request/ready
-//   handshake interface, counts latency cycles, and tracks total accesses.
+//   handshake interface. Queues requests, counts latency cycles,
+//   maintains an access counter, and provides synthesis-guarded
+//   simulation traces.
 // ============================================================
 
 `timescale 1ns / 1ps
@@ -64,7 +66,7 @@ module main_memory #(
         for (i = 0; i < DEPTH; i = i + 1)
             mem[i] = {DATA_WIDTH{1'b0}};
 
-        // Pre-load memory map values
+        // Pre-load test values
         mem[0] = 32'hDEADBEEF;
         mem[1] = 32'hCAFEBABE;
         mem[2] = 32'h12345678;
@@ -118,5 +120,18 @@ module main_memory #(
             end
         end
     end
+
+    // synthesis translate_off
+    always @(posedge clk) begin
+        if (pending && (delay_cnt == LATENCY - 1)) begin
+            if (pending_we)
+                $display("[Main Mem] WRITE addr=0x%02X data=0x%08X (access #%0d)",
+                         pending_addr, pending_wr_data, access_count + 1);
+            else
+                $display("[Main Mem] READ  addr=0x%02X data=0x%08X (access #%0d)",
+                         pending_addr, mem[pending_addr], access_count + 1);
+        end
+    end
+    // synthesis translate_on
 
 endmodule
