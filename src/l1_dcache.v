@@ -1,7 +1,7 @@
 // ============================================================
 // Module: L1 Data Cache
 // Project: Instruction and Data Memory Hierarchy
-// Member: Member 2
+// Member: Member 2 — Kabir Sharma (@Kabir-glitch)
 //
 // Description: 8-line direct-mapped L1 Data Cache.
 //   - Supports both CPU reads and writes
@@ -39,6 +39,7 @@ module l1_dcache (
     reg [2:0]  cache_tag   [0:7];
     reg        cache_valid [0:7];
 
+    // Address breakdown: [7:5] tag, [4:2] index, [1:0] byte offset
     wire [2:0] tag   = cpu_addr[7:5];
     wire [2:0] index = cpu_addr[4:2];
 
@@ -51,15 +52,22 @@ module l1_dcache (
         end
     end
 
+    // Sequential logic (reads + write-through)
     always @(posedge clk or posedge rst) begin
         if (rst) begin
-            hit <= 0; miss <= 0; cpu_stall <= 0;
-            mem_we <= 0; mem_req <= 0;
+            hit       <= 0;
+            miss      <= 0;
+            cpu_stall <= 0;
+            mem_we    <= 0;
+            mem_req   <= 0;
             for (i = 0; i < 8; i = i + 1)
                 cache_valid[i] <= 1'b0;
         end else begin
-            hit <= 0; miss <= 0;
-            cpu_stall <= 0; mem_we <= 0; mem_req <= 0;
+            hit       <= 0;
+            miss      <= 0;
+            cpu_stall <= 0;
+            mem_we    <= 0;
+            mem_req   <= 0;
 
             if (!cpu_we) begin
                 // --- READ ---
@@ -95,5 +103,27 @@ module l1_dcache (
             end
         end
     end
+
+    // ---- Performance Counters (simulation only) ----
+    reg [15:0] hit_count;
+    reg [15:0] miss_count;
+
+    initial begin
+        hit_count  = 0;
+        miss_count = 0;
+    end
+
+    // synthesis translate_off
+    always @(posedge clk) begin
+        if (hit)  hit_count  <= hit_count  + 1;
+        if (miss) miss_count <= miss_count + 1;
+    end
+
+    always @(posedge clk) begin
+        if (hit)    $display("[D-Cache] HIT   addr=0x%02X data=0x%08X", cpu_addr, cpu_rd_data);
+        if (miss)   $display("[D-Cache] MISS  addr=0x%02X — fetching from memory", cpu_addr);
+        if (cpu_we) $display("[D-Cache] WRITE addr=0x%02X data=0x%08X (write-through)", cpu_addr, cpu_wr_data);
+    end
+    // synthesis translate_on
 
 endmodule
