@@ -93,11 +93,25 @@ module cache_controller (
     end
 
     // ----------------------------------------------------------
-    // Sequential state register
+    // Sequential state register — with simulation debug traces
+    // `ifndef SYNTHESIS ensures $display is stripped by synthesisers.
     // ----------------------------------------------------------
     always @(posedge clk or posedge rst) begin
-        if (rst) state <= IDLE;
-        else      state <= next_state;
+        if (rst) begin
+            state <= IDLE;
+`ifndef SYNTHESIS
+            $display("[%0t] cache_controller: RESET -> IDLE", $time);
+`endif
+        end else begin
+            if (next_state != state) begin
+`ifndef SYNTHESIS
+                $display("[%0t] cache_controller: state %0b -> %0b (dcache_req=%b icache_req=%b mem_ready=%b)",
+                         $time, state, next_state,
+                         dcache_req, icache_req, mem_ready);
+`endif
+            end
+            state <= next_state;
+        end
     end
 
     // ----------------------------------------------------------
