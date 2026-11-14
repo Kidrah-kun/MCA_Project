@@ -48,6 +48,12 @@ module memory_hierarchy_tb;
     initial clk = 0;
     always #5 clk = ~clk;
 
+    // ------- VCD waveform dump -------
+    initial begin
+        $dumpfile("sim/waveforms/dump.vcd");
+        $dumpvars(0, memory_hierarchy_tb);
+    end
+
     // ------- Pass / Fail checker -------
     integer pass_count = 0, fail_count = 0;
     task check;
@@ -65,6 +71,7 @@ module memory_hierarchy_tb;
     endtask
 
     // ------- Main stimulus -------
+    integer cycle;
     initial begin
         $display("=== Memory Hierarchy Testbench ===");
 
@@ -105,8 +112,13 @@ module memory_hierarchy_tb;
         $display("[T6] DCache read addr=2 after write: data=0x%08X hit=%b", d_rd_data, dcache_hit);
         check(d_rd_data, 32'hBEEFCAFE, 6);
 
+        // ---- T7: I-Cache fetch new addr=1 — expect MISS ----
+        if_addr = 8'd1;
+        repeat(6) @(posedge clk); #1;
+        $display("[T7] ICache fetch addr=1: instr=0x%08X miss=%b", if_instr, icache_miss);
+
         #20;
-        $display("=== Testbench complete ===");
+        $display("=== Done: %0d PASS, %0d FAIL ===", pass_count, fail_count);
         $finish;
     end
 
