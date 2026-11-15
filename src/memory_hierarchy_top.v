@@ -93,7 +93,14 @@ module memory_hierarchy_top (
     // Drive memory request strobe whenever controller serves miss or write
     assign mem_req = mem_we | (icache_req | dcache_req);
 
-    // ---- L1 Instruction Cache ----
+    // ========================================================
+    // Module Instantiations
+    // ========================================================
+
+    // --------------------------------------------------------
+    // 1. L1 Instruction Cache (l1_icache)
+    //    Direct-mapped instruction cache with hit/miss detection.
+    // --------------------------------------------------------
     l1_icache icache (
         .clk       (clk),
         .rst       (rst),
@@ -108,7 +115,10 @@ module memory_hierarchy_top (
         .miss      (icache_miss)
     );
 
-    // ---- L1 Data Cache ----
+    // --------------------------------------------------------
+    // 2. L1 Data Cache (l1_dcache)
+    //    Direct-mapped data cache supporting read and write-through.
+    // --------------------------------------------------------
     l1_dcache dcache (
         .clk        (clk),
         .rst        (rst),
@@ -127,7 +137,10 @@ module memory_hierarchy_top (
         .miss       (dcache_miss)
     );
 
-    // ---- Cache Controller (Arbiter) ----
+    // --------------------------------------------------------
+    // 3. Cache Controller / Arbiter (cache_controller)
+    //    Prioritizes D-cache over I-cache, arbitrating DRAM bus access.
+    // --------------------------------------------------------
     cache_controller ctrl (
         .clk           (clk),
         .rst           (rst),
@@ -145,11 +158,20 @@ module memory_hierarchy_top (
         .mem_we        (mem_we),
         .mem_wr_data   (mem_wr_data),
         .mem_rd_data   (mem_rd_data),
-        .mem_ready     (mem_ready)
+        .mem_ready     (mem_ready),
+        .busy          (ctrl_busy)
     );
 
-    // ---- Main Memory ----
-    main_memory mmem (
+    // --------------------------------------------------------
+    // 4. Main Memory DRAM Backing Store (main_memory)
+    //    256x32 DRAM array with 3-cycle latency and handshake.
+    // --------------------------------------------------------
+    main_memory #(
+        .DEPTH     (256),
+        .DATA_WIDTH(32),
+        .ADDR_WIDTH(8),
+        .LATENCY   (3)
+    ) mmem (
         .clk     (clk),
         .rst     (rst),
         .addr    (mem_addr),
