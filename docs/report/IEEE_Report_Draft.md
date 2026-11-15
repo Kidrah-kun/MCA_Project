@@ -1,25 +1,64 @@
-# Instruction and Data Memory Hierarchy
-## IEEE Project Report — Draft
+---
+title: "Instruction and Data Memory Hierarchy"
+subtitle: "Modern Computer Architecture — Phase I Project Report"
+author:
+  - "Hardik Hathwal"
+  - "Kabir Sharma"
+  - "Abhinav Chaudhary"
+  - "Akshith Kumar"
+  - "Ayush Tiwari"
+date: "November 2026"
+geometry: "margin=1in"
+fontsize: 11pt
+linestretch: 1.15
+header-includes:
+  - \usepackage{booktabs}
+  - \usepackage{float}
+  - \usepackage{fancyhdr}
+  - \usepackage{listings}
+  - \usepackage{xcolor}
+  - \pagestyle{fancy}
+  - \fancyhf{}
+  - \fancyhead[L]{Instruction and Data Memory Hierarchy}
+  - \fancyhead[R]{Modern Computer Architecture}
+  - \fancyfoot[C]{\thepage}
+  - \lstset{basicstyle=\ttfamily\footnotesize, breaklines=true, frame=single, backgroundcolor=\color{gray!10}}
+---
 
-**Course:** Modern Computer Architecture  
-**Institution:** [Your University Name]  
-**Date:** November 2026
+\begin{center}
+\Large\textbf{Instruction and Data Memory Hierarchy}\\[0.4em]
+\large Modern Computer Architecture — Phase I Project Report\\[0.8em]
+\normalsize
+\begin{tabular}{lll}
+\textbf{Name} & \textbf{Role} \\
+\hline
+Hardik Hathwal   & Instruction Memory \& Cache Design (L1 I-Cache) \\
+Kabir Sharma     & Data Memory Module (L1 D-Cache) \\
+Abhinav Chaudhary & Cache Controller (FSM Arbiter) \\
+Akshith Kumar    & Main Memory Module \& Top-Level Integration \\
+Ayush Tiwari     & Testbench \& Integration \\
+\end{tabular}\\[0.6em]
+\normalsize GitHub: \texttt{https://github.com/Kidrah-kun/MCA\_Project}\\
+\normalsize November 2026
+\end{center}
 
 ---
 
 ## Abstract
 
-This paper presents the design and implementation of a two-level instruction and data memory hierarchy for a modern RISC-style processor using Verilog HDL. The proposed architecture features separate L1 instruction and data caches — following the Harvard memory architecture principle — connected through a priority-based finite state machine (FSM) cache controller to a main memory module with realistic DRAM access latency simulation. The L1 caches are implemented as 8-line direct-mapped caches with a write-through policy to ensure data consistency. The cache arbiter grants priority to data cache (D-Cache) miss requests over instruction cache (I-Cache) requests, minimizing pipeline stalls during simultaneous misses. The main memory controller simulates a 3-cycle DRAM access latency using a request/ready handshake protocol. The design is validated through a comprehensive seven-scenario testbench implemented in Icarus Verilog, with waveform analysis performed using GTKWave. Simulation results confirm correct hit/miss detection, write-through cache coherence, CPU stall signal generation, and proper arbitration under concurrent miss scenarios. The implementation demonstrates fundamental principles of computer memory organization and serves as a synthesizable RTL model for educational and research purposes.
+This paper presents the design and Verilog HDL implementation of a two-level instruction and data memory hierarchy for a modern RISC-style processor. The proposed architecture employs the Harvard memory organization principle, featuring separate L1 instruction and data caches connected through a priority-based finite state machine (FSM) arbiter to a main memory controller with realistic DRAM access latency simulation. The L1 caches are implemented as 8-line direct-mapped caches with a write-through policy to maintain data consistency. The cache arbiter grants priority to data cache (D-Cache) miss requests over instruction cache (I-Cache) requests, minimizing pipeline stalls during simultaneous misses. The main memory controller simulates a 3-cycle DRAM access latency using a request/ready handshake protocol. The design is validated through a comprehensive seven-scenario testbench implemented in Icarus Verilog, with waveform analysis performed in GTKWave. Simulation results confirm correct hit/miss detection, write-through cache coherence, CPU stall signal generation, and proper priority-based arbitration. The implementation demonstrates fundamental principles of modern computer memory organization and serves as a synthesizable RTL model for educational purposes.
 
-**Keywords:** Memory Hierarchy, Cache Memory, Direct-Mapped Cache, Write-Through, Verilog HDL, RISC Architecture, Cache Controller, FSM, DRAM Latency
+**Keywords:** Memory Hierarchy, Cache Memory, Direct-Mapped Cache, Write-Through, Verilog HDL, Harvard Architecture, Cache Arbiter, FSM, DRAM Latency
 
 ---
 
 ## 1. Introduction
 
-Modern processors face a significant performance bottleneck known as the **memory wall** — the growing gap between CPU processing speed and main memory access speed. The solution, universally adopted in contemporary processor design, is the **memory hierarchy**: a multi-level system of progressively larger but slower memory units, with small fast caches sitting between the CPU and main memory [1].
+Modern processors face a fundamental performance bottleneck known as the **memory wall** — the growing disparity between CPU execution speed and main memory access latency. Contemporary processors execute instructions in nanoseconds while main DRAM memory requires tens to hundreds of nanoseconds per access. Without mitigation, this gap would leave the processor stalled waiting for data the vast majority of the time.
 
-This project implements a functional Verilog HDL model of such a hierarchy, specifically focusing on the instruction and data memory subsystem. The design models a split L1 cache (separate instruction and data caches), a unified cache controller, and a DRAM-like main memory, mirroring the structure found in real processors such as the ARM Cortex-A series and RISC-V implementations.
+The universally adopted solution is the **memory hierarchy**: a multi-level system of progressively larger but slower memory units, with small, fast caches positioned between the CPU and main memory [1]. The hierarchy exploits two key principles of program behavior — **temporal locality** (recently accessed data is likely to be accessed again soon) and **spatial locality** (data near recently accessed addresses is likely to be accessed soon) — to keep frequently needed data in fast, low-latency cache storage.
+
+This project designs and implements in Verilog HDL a functional model of such a hierarchy. Specifically, the design models a split L1 cache (separate instruction and data caches), a unified cache arbiter, and a DRAM-modeled main memory, mirroring the structure found in real-world processors such as the ARM Cortex-A series and RISC-V implementations. The design is modular, parameterizable, and fully simulatable with waveform output.
 
 ---
 
@@ -27,23 +66,23 @@ This project implements a functional Verilog HDL model of such a hierarchy, spec
 
 ### 2.1 Cache Memory Fundamentals
 
-The concept of cache memory was formally introduced in the late 1960s. Wilkes (1965) first described the concept of a "slave memory" to bridge the speed gap between the CPU and main store [2]. Smith (1982) provided a comprehensive survey of cache memory systems, analyzing the effect of cache size, block size, and replacement policies on hit rate [3]. This foundational work established that even small direct-mapped caches dramatically reduce average memory access time.
+The formal introduction of cache memory is attributed to Wilkes (1965), who described a "slave memory" to bridge the speed gap between the CPU and main memory [2]. Smith (1982) provided the seminal comprehensive survey of cache memory systems, analyzing the effect of cache size, block size, and replacement policy on hit rate across diverse workloads [3]. This foundational work established that even small direct-mapped caches dramatically reduce average memory access time through exploitation of program locality.
 
-### 2.2 Direct-Mapped vs. Associative Caches
+### 2.2 Direct-Mapped vs. Set-Associative Caches
 
-Hill and Smith (1989) evaluated the tradeoffs between direct-mapped and set-associative cache organizations [4]. Their study demonstrated that while higher associativity reduces conflict misses, direct-mapped caches achieve lower access latency and are simpler to implement in hardware — making them well-suited for L1 cache implementations where speed is paramount. Our design employs direct-mapped caches for this reason.
+Hill and Smith (1989) evaluated the tradeoffs between direct-mapped and set-associative cache organizations [4]. Their analysis demonstrated that while higher associativity reduces conflict misses (misses caused by two addresses mapping to the same cache line), direct-mapped caches achieve lower access latency due to simpler hardware — no comparator array is needed beyond a single tag comparison. For L1 caches where access latency directly contributes to the processor's critical path, direct-mapped organization is frequently preferred. Our design adopts direct-mapped caches for the L1 level.
 
-### 2.3 Write Policies
+### 2.3 Write Policies: Write-Through vs. Write-Back
 
-The two primary cache write policies — write-through and write-back — were analyzed extensively by Smith (1982) and later by Jouppi (1990) [3][5]. Write-through updates both the cache and main memory on every write, ensuring consistency at the cost of higher memory bus traffic. Write-back only updates main memory when a dirty cache line is evicted, reducing bus traffic but adding complexity through dirty bits and eviction logic. Our design adopts **write-through** for simplicity and correctness in the prototype stage.
+Smith (1982) and Jouppi (1990) analyzed the two primary write policies in detail [3][5]. Under **write-through**, every CPU write updates both the cache and main memory simultaneously, ensuring consistency at the cost of higher memory bus traffic. Under **write-back**, the cache line is marked "dirty" on write, and main memory is updated only when the dirty line is evicted. Write-back reduces bus traffic but requires dirty bit tracking and eviction logic. Our prototype implements **write-through** for its simplicity and correctness guarantees without dirty bit management.
 
 ### 2.4 Split vs. Unified L1 Caches
 
-The Harvard architecture (split instruction and data memory) was shown by Patterson and Hennessy [1] to eliminate structural hazards in pipelined processors — a CPU cannot simultaneously fetch an instruction and load data from a unified cache. Modern processors universally implement split L1 I-Cache and D-Cache for this reason. Our design follows this approach with separate `l1_icache` and `l1_dcache` modules.
+The Harvard architecture (separate instruction and data memory paths) was shown by Patterson and Hennessy [1] to eliminate structural hazards in pipelined processors. A CPU with a unified L1 cache cannot simultaneously fetch an instruction and perform a data load/store in the same cycle — a critical limitation for pipelined execution. Modern processors universally implement split L1 I-Cache and D-Cache for this reason. Our design follows this approach with dedicated `l1_icache` and `l1_dcache` modules sharing a common main memory via the cache controller.
 
 ### 2.5 Cache Arbitration
 
-When separate instruction and data caches share a common backing memory, an arbiter is needed to manage simultaneous miss requests. Standard approaches grant priority to data cache requests [1], since data hazards in the execution pipeline are more immediately critical than instruction fetch delays (which the branch predictor and prefetch buffer can partially hide).
+When separate instruction and data caches share a common backing memory bus, an arbiter is needed to manage simultaneous miss requests. Standard practice, documented by Patterson and Hennessy [1], grants priority to data cache requests over instruction fetch requests. This is because a data hazard in the execution pipeline is immediately stalling — the processor cannot proceed until the data is available — while an instruction fetch miss may be partially hidden by out-of-order execution or branch prediction buffers.
 
 ---
 
@@ -51,71 +90,71 @@ When separate instruction and data caches share a common backing memory, an arbi
 
 ### 3.1 System Architecture
 
-The proposed memory hierarchy consists of four hardware modules connected as shown in Figure 1:
+The proposed memory hierarchy consists of four hardware modules connected as shown in Figure 1. The CPU interfaces with two separate caches: a read-only instruction cache (I-Cache) for instruction fetch and a read/write data cache (D-Cache) for load/store operations. Both caches connect through a shared cache controller to a single main memory module.
 
 ```
 CPU (Instruction Fetch)      CPU (Data Access)
          |                          |
-   [L1 I-Cache]              [L1 D-Cache]
-   (8-line, R/O)          (8-line, R/W, Write-Through)
-         |    miss                  |    miss (PRIORITY)
+  [L1 I-Cache]              [L1 D-Cache]
+  8-line, Read-Only         8-line, R/W, Write-Through
+         |  miss                    |  miss (PRIORITY)
          └──────────┬───────────────┘
                     |
            [Cache Controller]
-           (Arbiter FSM — 3 states)
+           FSM Arbiter — 3 States
                     |
             [Main Memory]
-           (256×32-bit, 3-cycle latency)
+           256×32-bit, 3-cycle DRAM latency
 ```
-*Figure 1: Memory Hierarchy Block Diagram*
+*Figure 1: Memory Hierarchy System Architecture*
 
-### 3.2 L1 Instruction Cache (`l1_icache.v`)
+### 3.2 L1 Instruction Cache — `l1_icache.v` (Hardik Hathwal)
 
-The instruction cache is a read-only, 8-line direct-mapped cache with a 32-bit word size. The 8-bit CPU address is partitioned as:
-- **Tag [7:5]** — 3 bits identifying the memory block
-- **Index [4:2]** — 3 bits selecting the cache line
-- **Offset [1:0]** — 2 bits (word-aligned, unused in this implementation)
+The instruction cache is a **read-only, 8-line direct-mapped cache** with 32-bit word width. The 8-bit CPU address is partitioned as:
 
-On a **hit** (valid bit set and tag matches), the cached instruction is returned in 1 clock cycle. On a **miss**, the CPU stall signal is asserted, a memory request is issued to the cache controller, and the cache is updated when main memory responds.
+| Bits   | Field  | Width  | Purpose                              |
+|--------|--------|--------|--------------------------------------|
+| [7:5]  | Tag    | 3 bits | Identifies which memory block is cached |
+| [4:2]  | Index  | 3 bits | Selects one of 8 cache lines         |
+| [1:0]  | Offset | 2 bits | Byte offset (word-aligned, unused)   |
 
-### 3.3 L1 Data Cache (`l1_dcache.v`)
+On a **hit** (valid bit set and tag matches the address tag), the cached instruction is returned in 1 clock cycle. On a **miss**, the CPU stall signal is asserted, a memory request is issued to the cache controller, and the cache line is updated when main memory responds via the `mem_ready` signal. The module includes parameterizable `CACHE_LINES`, `ADDR_WIDTH`, and `DATA_WIDTH` for scalability, plus internal hit/miss performance counters for simulation monitoring.
 
-The data cache extends the instruction cache with full read/write support. It uses the same direct-mapped organization with identical address partitioning. The **write-through policy** is implemented: on every CPU write, the cache line is updated AND a simultaneous write is issued to main memory via the cache controller. This eliminates the need for dirty bits and simplifies cache coherence.
+### 3.3 L1 Data Cache — `l1_dcache.v` (Kabir Sharma)
 
-### 3.4 Cache Controller / Arbiter (`cache_controller.v`)
+The data cache extends the instruction cache architecture with full read/write support. It uses the same 8-line direct-mapped organization with identical address partitioning. The **write-through policy** is implemented: on every CPU write, the cache line is simultaneously updated and a write request is issued to main memory via the cache controller. This eliminates dirty bit tracking while guaranteeing that main memory always holds the most recent data value. On a read miss, the CPU is stalled and the missing word is fetched from main memory into the cache.
 
-A 3-state FSM arbitrates memory bus access:
+### 3.4 Cache Controller / Arbiter — `cache_controller.v` (Abhinav Chaudhary)
 
-| State | Description |
-|-------|-------------|
-| `IDLE` | No pending requests. Accepts new requests from either cache. |
-| `SERVE_D` | Serving a D-Cache read miss (waiting for main memory). |
-| `SERVE_I` | Serving an I-Cache read miss (waiting for main memory). |
+A 3-state Mealy FSM arbitrates memory bus access between the two L1 caches:
 
-D-Cache requests always pre-empt I-Cache requests in the IDLE state. The controller asserts `icache_ready` or `dcache_ready` when main memory returns valid data.
+| State     | Description                                                     |
+|-----------|-----------------------------------------------------------------|
+| `IDLE`    | No pending miss requests. Accepts new requests from either cache. D-Cache takes priority. |
+| `SERVE_D` | Serving a D-Cache read miss — waiting for main memory `ready` pulse. |
+| `SERVE_I` | Serving an I-Cache read miss — waiting for main memory `ready` pulse. |
 
-### 3.5 Main Memory Controller (`main_memory.v`)
+When both caches simultaneously assert miss requests in the `IDLE` state, the controller transitions to `SERVE_D` (D-Cache priority). The I-Cache request is deferred until the next `IDLE` state. D-Cache write requests are handled inline in `IDLE` without a state transition since write-through writes do not require a main memory read response. A `busy` output is provided for external stall logic.
 
-The main memory module models a 256-word × 32-bit DRAM with parameterizable access latency (default: 3 clock cycles). A request/ready handshake protocol is used:
-1. The cache controller asserts `req` with the target `addr`
-2. The memory controller counts down 3 cycles
-3. After 3 cycles, `ready` is pulsed high and `rd_data` is valid
+### 3.5 Main Memory Controller — `main_memory.v` (Akshith Kumar)
 
-### 3.6 Top-Level Integration (`memory_hierarchy_top.v`)
+The main memory module models a 256-word × 32-bit DRAM with a parameterizable access latency (default: 3 clock cycles). A **request/ready handshake** protocol is used: the cache controller asserts `req` with the target address; the memory controller latches the request, counts down 3 cycles, then asserts `ready` and presents valid `rd_data`. Write requests are handled immediately on the same handshake path. The module includes an `access_count` register that tracks the total number of memory accesses during simulation.
 
-The top-level module instantiates all four sub-modules and connects their ports through internal wires, presenting a clean CPU-facing interface with separate instruction fetch and data access ports.
+### 3.6 Top-Level Integration — `memory_hierarchy_top.v` (Akshith Kumar)
+
+The top-level module instantiates all four sub-modules and connects them via internal wires, presenting a clean CPU-facing interface with separate instruction fetch ports (`if_addr`, `if_instr`, `if_stall`) and data access ports (`d_addr`, `d_we`, `d_wr_data`, `d_rd_data`, `d_stall`).
 
 ---
 
 ## 4. Individual Contributions
 
-| Member | Module(s) | Contribution |
-|--------|-----------|--------------|
-| Member 1 (Kidrah-kun) | `l1_icache.v` | Designed and implemented the L1 Instruction Cache — direct-mapped read-only cache with hit/miss detection, stall generation, and performance counters |
-| Member 2 | `l1_dcache.v` | Designed and implemented the L1 Data Cache — read/write support, write-through policy, and cache miss handling with CPU stall |
-| Member 3 | `cache_controller.v` | Designed and implemented the Cache Arbiter FSM — 3-state priority arbitration between I-Cache and D-Cache miss requests |
-| Member 4 | `main_memory.v`, `memory_hierarchy_top.v` | Designed the DRAM latency model with req/ready handshake and assembled all modules in the top-level integration module |
-| Member 5 | `testbench/memory_hierarchy_tb.v`, `docs/diagrams/` | Developed the full 7-scenario testbench, waveform dump, automated pass/fail checking, and architecture documentation |
+| Member              | File(s) Owned                                      | Contribution Summary                                                                                           |
+|---------------------|----------------------------------------------------|----------------------------------------------------------------------------------------------------------------|
+| **Hardik Hathwal**  | `src/l1_icache.v`, `docs/`                        | Designed and implemented the L1 Instruction Cache — direct-mapped, parameterizable, with hit/miss detection, stall generation, and performance counters. Also authored the IEEE report and architecture diagrams. |
+| **Kabir Sharma**    | `src/l1_dcache.v`                                 | Designed and implemented the L1 Data Cache — read/write support, write-through policy, hit/miss logic, and simulation debug display. |
+| **Abhinav Chaudhary** | `src/cache_controller.v`                        | Designed and implemented the Cache Arbiter FSM — 3-state priority-based arbitration between I-Cache and D-Cache miss requests, busy signal, and request counters. |
+| **Akshith Kumar**   | `src/main_memory.v`, `src/memory_hierarchy_top.v` | Designed the DRAM latency model with req/ready handshake and access counters; assembled all modules in the top-level integration with clean port wiring. |
+| **Ayush Tiwari**    | `testbench/memory_hierarchy_tb.v`                 | Developed the full 7-scenario testbench — DUT instantiation, clock generation, I-Cache and D-Cache test cases (T1–T7), automated pass/fail checker, VCD waveform dump, and simulation statistics. |
 
 ---
 
@@ -136,11 +175,3 @@ The top-level module instantiates all four sub-modules and connects their ports 
 [7] V. C. Hamacher, Z. G. Vranesic, and S. G. Zaky, *Computer Organization*, 5th ed. New York: McGraw-Hill, 2002.
 
 [8] C. Zhang, F. Vahid, and W. Najjar, "A Highly Configurable Cache Architecture for Embedded Systems," in *Proc. 30th Int. Symp. Comput. Archit. (ISCA)*, San Diego, CA, Jun. 2003, pp. 136–146.
-
----
-
-> **Note:** This is a Phase I draft. For Phase II, add:
-> - Section 4: Results and Discussion (simulation waveforms, hit rate analysis, performance comparison)
-> - Section 5: Conclusion
-> - Update Individual Contributions with specific Phase II work
-

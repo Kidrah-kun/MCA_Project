@@ -25,11 +25,11 @@ This project implements a **complete Instruction and Data Memory Hierarchy** in 
 
 | Name | GitHub | Role |
 |------|--------|------|
-| Hardik Hathwal | [@Kidrah-kun](https://github.com/Kidrah-kun) | Instruction Memory & Cache Design |
-| Kabir Sharma | — | Data Memory Module |
-| Abhinav Chaudhary | — | Cache Controller |
-| Akshith Kumar | — | Main Memory Module |
-| Ayush Tiwari | — | Testbench & Integration |
+| Hardik Hathwal | [@Kidrah-kun](https://github.com/Kidrah-kun) | Instruction Memory & Cache Design (`l1_icache.v`) |
+| Kabir Sharma | [@Kabir-glitch](https://github.com/Kabir-glitch) | Data Memory Module (`l1_dcache.v`) |
+| Abhinav Chaudhary | [@AbhinavChoudhary](https://github.com/AbhinavChoudhary) | Cache Controller FSM (`cache_controller.v`) |
+| Akshith Kumar | [@AkshithKumar](https://github.com/AkshithKumar) | Main Memory Module & Top-Level (`main_memory.v`, `memory_hierarchy_top.v`) |
+| Ayush Tiwari | [@AyushTiwari](https://github.com/AyushTiwari) | Testbench & Integration (`memory_hierarchy_tb.v`) |
 
 ---
 
@@ -38,19 +38,25 @@ This project implements a **complete Instruction and Data Memory Hierarchy** in 
 ```
 MCA_Project/
 │
-├── src/                        # Verilog source files
-│   ├── instruction_memory.v    # Instruction ROM
-│   ├── data_memory.v           # Data RAM
-│   ├── cache_controller.v      # Cache hit/miss + replacement logic
-│   ├── main_memory.v           # Backing main memory
-│   └── memory_hierarchy_top.v  # Top-level integration module
+├── src/                        # Verilog HDL source files
+│   ├── l1_icache.v             # L1 Instruction Cache (8 lines, direct-mapped, read-only)
+│   ├── l1_dcache.v             # L1 Data Cache (8 lines, write-through, read/write)
+│   ├── cache_controller.v      # Cache Arbiter FSM (3 states, D-cache priority)
+│   ├── main_memory.v           # DRAM controller (3-cycle latency, req/ready handshake)
+│   ├── memory_hierarchy_top.v  # Top-level integration module
+│   ├── instruction_memory.v    # Baseline instruction ROM
+│   └── data_memory.v           # Baseline data RAM
 │
 ├── testbench/                  # Simulation testbenches
-│   └── memory_hierarchy_tb.v   # Full system testbench
+│   └── memory_hierarchy_tb.v   # Full system testbench (7 validation test cases)
 │
 ├── docs/                       # Documentation & report
-│   ├── report/                 # IEEE report (PDF + source)
-│   └── diagrams/               # Architecture block diagrams
+│   ├── report/                 # IEEE project report (PDF, DOCX, Markdown)
+│   │   ├── IEEE_Report_MCA_Group.pdf
+│   │   ├── IEEE_Report_MCA_Group.docx
+│   │   └── IEEE_Report_Draft.md
+│   └── diagrams/               # Architecture block diagrams & specifications
+│       └── architecture.md
 │
 ├── sim/                        # Simulation outputs
 │   └── waveforms/              # GTKWave .vcd dump files
@@ -120,7 +126,7 @@ gtkwave sim/waveforms/dump.vcd
 
 ## 📄 Report
 
-> 📄 **[IEEE Project Report (PDF)](docs/report/)** ← *(will be uploaded before submission)*
+> 📄 **[IEEE Project Report (PDF)](docs/report/IEEE_Report_MCA_Group.pdf)** | **[Word Document](docs/report/IEEE_Report_MCA_Group.docx)** | **[Markdown Source](docs/report/IEEE_Report_Draft.md)**
 
 ---
 
