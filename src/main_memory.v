@@ -9,6 +9,60 @@
 //   handshake interface. Queues requests, counts latency cycles,
 //   maintains an access counter, and provides synthesis-guarded
 //   simulation traces.
+//
+// ============================================================
+// Microarchitecture Diagram:
+//
+//   clk, rst ─────────────────────────────────────────────────────────────┐
+//                                                                         │
+//   req ──────────┐                                                       │
+//   we ───────────┼─►┌─────────────────────────┐                          │
+//   addr[7:0] ────┼─►│   Request Latch Unit    │                          │
+//   wr_data[31:0] ┼─►│  - pending              │                          │
+//                 │  │  - pending_we           │                          │
+//                 │  │  - pending_addr[7:0]    │                          │
+//                 │  │  - pending_wr_data[31:0]│                          │
+//                 │  └────────────┬────────────┘                          │
+//                 │               │                                       │
+//                 │               ▼                                       │
+//                 │  ┌─────────────────────────┐                          │
+//                 │  │ 3-Cycle Latency Counter │                          │
+//                 │  │ delay_cnt[1:0] (0 to 2) │                          │
+//                 │  └────────────┬────────────┘                          │
+//                 │               │ (when delay_cnt == LATENCY - 1)       │
+//                 │               ▼                                       │
+//                 │  ┌──────────────────────────────────────────────┐     │
+//                 │  │               DRAM Storage Core              │     │
+//                 │  │          256 x 32-bit Memory Array           │     │
+//                 │  │                                              │     │
+//                 │  │  Write: mem[pending_addr] <= pending_wr_data │     │
+//                 │  │  Read : rd_data           <= mem[pending_addr│────► rd_data[31:0]
+//                 │  └──────────────────────┬───────────────────────┘     │
+//                 │                         │                             │
+//                 │                         ▼                             │
+//                 │  ┌─────────────────────────┐                          │
+//                 │  │     Handshake Strobe    │                          │
+//                 │  │  ready <= 1 (1 cycle)   │─────────────────────────► ready
+//                 │  └─────────────────────────┘                          │
+//                 │                         │                             │
+//                 │                         ▼                             │
+//                 │  ┌──────────────────────────────────────────────┐     │
+//                 │  │         Performance / Instrumentation        │     │
+//                 │  │  - access_count <= access_count + 1          │     │
+//                 │  │  - synthesis-guarded simulation $display     │     │
+//                 │  │  - final simulation summary block            │     │
+//                 │  └──────────────────────────────────────────────┘     │
+//                 └───────────────────────────────────────────────────────┘
+//
+// Read Timing Waveform (3-Cycle Latency):
+//   clk       ___/¯\_/¯\_/¯\_/¯\_/¯\_/¯\_
+//   req       ___/¯¯¯\___________________
+//   addr      ===< 0x05 >================
+//   pending   _______/¯¯¯¯¯¯¯¯¯¯¯\_______
+//   delay_cnt ===< 0 >==< 1 >==< 2 >==< 0 >
+//   rd_data   =================< 0x0A >=
+//   ready     _________________/¯¯¯¯¯\___
+//
 // ============================================================
 
 `timescale 1ns / 1ps
