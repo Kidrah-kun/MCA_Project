@@ -9,7 +9,10 @@
 
 The Main Memory module acts as the realistic DRAM backing store for the memory hierarchy. Because physical DRAM takes multiple clock cycles to charge lines and sense data, this module models a **3-cycle latency pipeline** with a strict **request/ready handshake**.
 
-### 1.1 Detailed Block Diagram
+### 1.1 Microarchitecture Image
+![Main Memory Architecture](main_memory_architecture.png)
+
+### 1.2 Detailed Block Diagram
 
 ```
                               ┌────────────────────────────────────────────────────────────┐
@@ -167,6 +170,11 @@ ready        ___________________________________________________  (Writes acknow
 ## 2. Top-Level Integration (`memory_hierarchy_top.v`) Architecture
 
 The Top-Level module connects the entire memory subsystem together and interfaces directly to the CPU.
+
+### 2.1 System Architecture Image
+![System Hierarchy Architecture](system_hierarchy_architecture.png)
+
+### 2.2 System Interconnect Diagram
 
 ```mermaid
 graph TB
