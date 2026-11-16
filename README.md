@@ -27,7 +27,7 @@ This project implements a **complete Instruction and Data Memory Hierarchy** in 
 |------|--------|-----------------------|
 | Hardik Hathwal | [@Kidrah-kun](https://github.com/Kidrah-kun) | Lead, L1 Instruction Cache (`l1_icache.v`), IEEE Report |
 | Kabir Sharma | [@Kabir-glitch](https://github.com/Kabir-glitch) | L1 Data Cache (`l1_dcache.v`) & Write-Through Policy |
-| Abhinav Chaudhary | [@AbhinavChoudhary](https://github.com/AbhinavChoudhary) | Cache Controller & Priority Arbiter FSM (`cache_controller.v`) |
+| Abhinav Choudhary | [@AbhinavChoudhary](https://github.com/AbhinavChoudhary) | Cache Controller & Priority Arbiter FSM (`cache_controller.v`) |
 | Akshith Kumar | [@AkshithKumar](https://github.com/AkshithKumar) | DRAM Controller (`main_memory.v`) & Top-Level (`memory_hierarchy_top.v`) |
 | Ayush Tiwari | [@AyushTiwari](https://github.com/AyushTiwari) | Verification Testbench & Simulation (`memory_hierarchy_tb.v`) |
 
