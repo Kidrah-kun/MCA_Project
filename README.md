@@ -27,7 +27,7 @@ This project implements a **complete Instruction and Data Memory Hierarchy** in 
 |------|--------|------|
 | Hardik Hathwal | [@Kidrah-kun](https://github.com/Kidrah-kun) | Instruction Memory & Cache Design |
 | Kabir Sharma | — | Data Memory Module |
-| Abhinav Choudhary | @its-abhi21| Cache Controller |
+| Abhinav Choudhary | @itsabhi-21| Cache Controller |
 | Akshith Kumar | — | Main Memory Module |
 | Ayush Tiwari | — | Testbench & Integration |
 
