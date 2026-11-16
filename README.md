@@ -123,7 +123,7 @@ gtkwave sim/waveforms/dump.vcd
 
 ## 🎬 Demo Video
 
-> 📹 **[Watch the Prototype Demo Video](#)** ← *(link will be updated before submission)*
+> 📹 **[Watch the Prototype Demo Video](https://drive.google.com/drive/folders/13wDg54vxgfju63n7lJU5kTT4DHws4Adr?usp=sharing)**
 
 ---
 
@@ -133,8 +133,5 @@ gtkwave sim/waveforms/dump.vcd
 
 ---
 
-## 📅 Submission
 
-- **Phase I Deadline:** November 16, 2026, 11:59 PM (IST)
-- **Submission Form:** [Google Form](https://docs.google.com/forms/d/e/1FAIpQLSc6Cx8OrOQLGj_X2ZMkyG5jc8mokq36mGRq2x8jGRNV1sbegA/viewform)
 
