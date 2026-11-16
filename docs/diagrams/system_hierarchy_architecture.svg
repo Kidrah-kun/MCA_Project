@@ -1,0 +1,152 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1150 900" width="1150" height="900" style="background:#0d1117; font-family:-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;">
+  <defs>
+    <!-- Gradients -->
+    <linearGradient id="headerGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#1f6feb"/>
+      <stop offset="100%" stop-color="#8957e5"/>
+    </linearGradient>
+    <filter id="shadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="4" stdDeviation="6" flood-color="#000000" flood-opacity="0.6"/>
+    </filter>
+    <filter id="akshithGlow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="0" stdDeviation="8" flood-color="#58a6ff" flood-opacity="0.6"/>
+    </filter>
+    <marker id="arr" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto">
+      <path d="M1,1 L7,4 L1,7 Z" fill="#58a6ff"/>
+    </marker>
+    <marker id="arrGold" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto">
+      <path d="M1,1 L7,4 L1,7 Z" fill="#d29922"/>
+    </marker>
+    <marker id="arrGreen" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto">
+      <path d="M1,1 L7,4 L1,7 Z" fill="#3fb950"/>
+    </marker>
+    <marker id="arrPurple" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto">
+      <path d="M1,1 L7,4 L1,7 Z" fill="#bc8cff"/>
+    </marker>
+  </defs>
+
+  <!-- Banner -->
+  <rect x="40" y="25" width="1070" height="65" rx="10" fill="url(#headerGrad)" filter="url(#shadow)"/>
+  <text x="65" y="55" fill="#ffffff" font-size="20" font-weight="700">Memory Hierarchy Top-Level System Architecture</text>
+  <text x="65" y="75" fill="#e6edf3" font-size="12">Module: memory_hierarchy_top.v | Integration &amp; DRAM Backing Store (Akshith Kumar - Member 4)</text>
+
+  <!-- 1. CPU CORE (Top) -->
+  <rect x="175" y="115" width="800" height="85" rx="10" fill="#161b22" stroke="#30363d" stroke-width="2" filter="url(#shadow)"/>
+  <rect x="175" y="115" width="800" height="28" rx="10" fill="#21262d"/>
+  <text x="510" y="134" fill="#f0f6fc" font-size="13" font-weight="700">CPU CORE INTERFACE</text>
+  
+  <text x="210" y="165" fill="#58a6ff" font-size="11" font-family="monospace">if_addr [7:0] (PC)</text>
+  <text x="210" y="185" fill="#3fb950" font-size="11" font-family="monospace">if_instr [31:0] | if_stall</text>
+
+  <text x="650" y="165" fill="#e3b341" font-size="11" font-family="monospace">d_addr [7:0] | d_we | d_wr_data [31:0]</text>
+  <text x="650" y="185" fill="#3fb950" font-size="11" font-family="monospace">d_rd_data [31:0] | d_stall</text>
+
+  <!-- Downward Arrows from CPU to Caches -->
+  <!-- Left path (Instruction) -->
+  <line x1="330" y1="200" x2="330" y2="245" stroke="#58a6ff" stroke-width="2.5" marker-end="url(#arr)"/>
+  <line x1="380" y1="245" x2="380" y2="200" stroke="#3fb950" stroke-width="2" marker-end="url(#arrGreen)"/>
+
+  <!-- Right path (Data) -->
+  <line x1="770" y1="200" x2="770" y2="245" stroke="#d29922" stroke-width="2.5" marker-end="url(#arrGold)"/>
+  <line x1="820" y1="245" x2="820" y2="200" stroke="#3fb950" stroke-width="2" marker-end="url(#arrGreen)"/>
+
+  <!-- 2. L1 CACHES (Middle Top) -->
+  <!-- L1 I-Cache -->
+  <rect x="175" y="245" width="370" height="175" rx="10" fill="#161b22" stroke="#30363d" stroke-width="2" filter="url(#shadow)"/>
+  <rect x="175" y="245" width="370" height="28" rx="10" fill="#1f6feb" opacity="0.3"/>
+  <text x="195" y="264" fill="#58a6ff" font-size="13" font-weight="700">L1 Instruction Cache (l1_icache.v)</text>
+  <text x="440" y="264" fill="#8b949e" font-size="11">Member 1</text>
+  
+  <text x="195" y="295" fill="#c9d1d9" font-size="11">• 8 Lines (Direct-Mapped), 32-bit Data</text>
+  <text x="195" y="315" fill="#c9d1d9" font-size="11">• Tag: [7:5] | Index: [4:2] | Offset: [1:0]</text>
+  <text x="195" y="335" fill="#c9d1d9" font-size="11">• Read-Only Harvard Architecture</text>
+  
+  <rect x="195" y="355" width="90" height="24" rx="4" fill="#238636" opacity="0.3" stroke="#2ea043"/>
+  <text x="205" y="371" fill="#3fb950" font-size="10" font-family="monospace">icache_hit</text>
+  <rect x="295" y="355" width="95" height="24" rx="4" fill="#da3633" opacity="0.3" stroke="#f85149"/>
+  <text x="305" y="371" fill="#ff7b72" font-size="10" font-family="monospace">icache_miss</text>
+  <rect x="400" y="355" width="85" height="24" rx="4" fill="#21262d" stroke="#8b949e"/>
+  <text x="410" y="371" fill="#8b949e" font-size="10" font-family="monospace">cpu_stall</text>
+
+  <!-- L1 D-Cache -->
+  <rect x="605" y="245" width="370" height="175" rx="10" fill="#161b22" stroke="#30363d" stroke-width="2" filter="url(#shadow)"/>
+  <rect x="605" y="245" width="370" height="28" rx="10" fill="#d29922" opacity="0.3"/>
+  <text x="625" y="264" fill="#e3b341" font-size="13" font-weight="700">L1 Data Cache (l1_dcache.v)</text>
+  <text x="870" y="264" fill="#8b949e" font-size="11">Member 2</text>
+  
+  <text x="625" y="295" fill="#c9d1d9" font-size="11">• 8 Lines (Direct-Mapped), 32-bit Data</text>
+  <text x="625" y="315" fill="#c9d1d9" font-size="11">• Write-Through Policy (Cache + DRAM)</text>
+  <text x="625" y="335" fill="#c9d1d9" font-size="11">• Hit: 1 cycle | Miss: Stall + DRAM Fetch</text>
+
+  <rect x="625" y="355" width="90" height="24" rx="4" fill="#238636" opacity="0.3" stroke="#2ea043"/>
+  <text x="635" y="371" fill="#3fb950" font-size="10" font-family="monospace">dcache_hit</text>
+  <rect x="725" y="355" width="95" height="24" rx="4" fill="#da3633" opacity="0.3" stroke="#f85149"/>
+  <text x="735" y="371" fill="#ff7b72" font-size="10" font-family="monospace">dcache_miss</text>
+  <rect x="830" y="355" width="85" height="24" rx="4" fill="#21262d" stroke="#8b949e"/>
+  <text x="840" y="371" fill="#8b949e" font-size="10" font-family="monospace">cpu_stall</text>
+
+  <!-- Arrows from Caches to Controller -->
+  <line x1="360" y1="420" x2="450" y2="475" stroke="#58a6ff" stroke-width="2" marker-end="url(#arr)"/>
+  <text x="320" y="450" fill="#58a6ff" font-size="10" font-family="monospace">icache_req, addr</text>
+
+  <line x1="790" y1="420" x2="700" y2="475" stroke="#d29922" stroke-width="2" marker-end="url(#arrGold)"/>
+  <text x="760" y="450" fill="#e3b341" font-size="10" font-family="monospace">dcache_req, we, wr_data</text>
+
+  <!-- 3. CACHE CONTROLLER (Middle) -->
+  <rect x="360" y="475" width="430" height="140" rx="10" fill="#161b22" stroke="#30363d" stroke-width="2" filter="url(#shadow)"/>
+  <rect x="360" y="475" width="430" height="28" rx="10" fill="#8957e5" opacity="0.3"/>
+  <text x="380" y="494" fill="#bc8cff" font-size="13" font-weight="700">Cache Controller / Priority Arbiter FSM (cache_controller.v)</text>
+  <text x="720" y="494" fill="#8b949e" font-size="11">Member 3</text>
+  
+  <text x="380" y="525" fill="#c9d1d9" font-size="11">• 3 FSM States: IDLE (00), SERVE_D (01), SERVE_I (10)</text>
+  <text x="380" y="545" fill="#f0883e" font-size="11" font-weight="600">• Arbitration: D-Cache has PRIORITY over I-Cache</text>
+  <text x="380" y="565" fill="#c9d1d9" font-size="11">• Controls shared DRAM memory bus and data routing</text>
+
+  <rect x="380" y="580" width="80" height="22" rx="4" fill="#21262d" stroke="#8b949e"/>
+  <text x="390" y="595" fill="#58a6ff" font-size="10" font-family="monospace">busy strobe</text>
+  <rect x="475" y="580" width="140" height="22" rx="4" fill="#21262d" stroke="#8b949e"/>
+  <text x="485" y="595" fill="#8b949e" font-size="10" font-family="monospace">dcache_req_count</text>
+  <rect x="625" y="580" width="140" height="22" rx="4" fill="#21262d" stroke="#8b949e"/>
+  <text x="635" y="595" fill="#8b949e" font-size="10" font-family="monospace">icache_req_count</text>
+
+  <!-- Akshith's continuous assignment block -->
+  <rect x="830" y="515" width="230" height="60" rx="8" fill="#0d1117" stroke="#58a6ff" stroke-width="1.5" stroke-dasharray="4,3"/>
+  <text x="840" y="535" fill="#58a6ff" font-size="11" font-weight="600">Memory Request Logic:</text>
+  <text x="840" y="555" fill="#c9d1d9" font-size="9" font-family="monospace">assign mem_req = mem_we |</text>
+  <text x="840" y="568" fill="#c9d1d9" font-size="9" font-family="monospace">                 (icache_req | dcache_req);</text>
+
+  <!-- Bus line down to Main Memory -->
+  <line x1="575" y1="615" x2="575" y2="680" stroke="#58a6ff" stroke-width="3" marker-end="url(#arr)"/>
+  <text x="585" y="640" fill="#58a6ff" font-size="10" font-family="monospace">mem_addr, mem_we, mem_wr_data, mem_req</text>
+  <text x="585" y="658" fill="#3fb950" font-size="10" font-family="monospace">mem_rd_data, mem_ready (Handshake)</text>
+
+  <!-- 4. MAIN MEMORY (Bottom - HIGHLIGHTED AS AKSHITH'S PART) -->
+  <rect x="175" y="680" width="800" height="185" rx="12" fill="#161b22" stroke="#58a6ff" stroke-width="3" filter="url(#akshithGlow)"/>
+  <rect x="175" y="680" width="800" height="32" rx="12" fill="#1f6feb" opacity="0.4"/>
+  <text x="195" y="702" fill="#ffffff" font-size="14" font-weight="700">MAIN MEMORY CONTROLLER &amp; DRAM BACKING STORE (main_memory.v)</text>
+  <rect x="825" y="684" width="140" height="24" rx="4" fill="#238636"/>
+  <text x="835" y="700" fill="#ffffff" font-size="11" font-weight="700">AKSHITH KUMAR</text>
+
+  <rect x="195" y="725" width="230" height="120" rx="6" fill="#0d1117" stroke="#30363d"/>
+  <text x="210" y="747" fill="#58a6ff" font-size="12" font-weight="600">1. Request Latch</text>
+  <text x="210" y="768" fill="#c9d1d9" font-size="10" font-family="monospace">• pending register</text>
+  <text x="210" y="785" fill="#c9d1d9" font-size="10" font-family="monospace">• pending_addr [7:0]</text>
+  <text x="210" y="802" fill="#c9d1d9" font-size="10" font-family="monospace">• pending_we &amp; wr_data</text>
+  <text x="210" y="825" fill="#8b949e" font-size="9">Decouples bus from memory core</text>
+
+  <rect x="445" y="725" width="230" height="120" rx="6" fill="#0d1117" stroke="#30363d"/>
+  <text x="460" y="747" fill="#ff7b72" font-size="12" font-weight="600">2. 3-Cycle Latency Engine</text>
+  <text x="460" y="768" fill="#c9d1d9" font-size="10" font-family="monospace">• delay_cnt [1:0]</text>
+  <text x="460" y="785" fill="#c9d1d9" font-size="10" font-family="monospace">• Cycles: 0 → 1 → 2 (Ready)</text>
+  <text x="460" y="802" fill="#c9d1d9" font-size="10" font-family="monospace">• req/ready 1-cycle handshake</text>
+  <text x="460" y="825" fill="#8b949e" font-size="9">Simulates physical DRAM delay</text>
+
+  <rect x="695" y="725" width="260" height="120" rx="6" fill="#0d1117" stroke="#30363d"/>
+  <text x="710" y="747" fill="#bc8cff" font-size="12" font-weight="600">3. 256×32 DRAM Array &amp; Stats</text>
+  <text x="710" y="768" fill="#c9d1d9" font-size="10" font-family="monospace">• mem [0:255] (32-bit words)</text>
+  <text x="710" y="785" fill="#c9d1d9" font-size="10" font-family="monospace">• Preloaded: 0xDEADBEEF, ...</text>
+  <text x="710" y="802" fill="#c9d1d9" font-size="10" font-family="monospace">• access_count register</text>
+  <text x="710" y="825" fill="#3fb950" font-size="9">Synthesis-guarded traces &amp; final stats</text>
+
+</svg>

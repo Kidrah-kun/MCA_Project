@@ -1,0 +1,223 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1100 820" width="1100" height="820" style="background:#0d1117; font-family:-apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;">
+  <defs>
+    <!-- Gradients -->
+    <linearGradient id="headerGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#1f6feb"/>
+      <stop offset="100%" stop-color="#388bfd"/>
+    </linearGradient>
+    <linearGradient id="cardGrad1" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#161b22"/>
+      <stop offset="100%" stop-color="#0d1117"/>
+    </linearGradient>
+    <linearGradient id="accentGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#238636"/>
+      <stop offset="100%" stop-color="#2ea043"/>
+    </linearGradient>
+    <linearGradient id="dramGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#8957e5"/>
+      <stop offset="100%" stop-color="#a371f7"/>
+    </linearGradient>
+    <linearGradient id="timerGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#da3633"/>
+      <stop offset="100%" stop-color="#f85149"/>
+    </linearGradient>
+    <linearGradient id="busGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#d29922"/>
+      <stop offset="100%" stop-color="#e3b341"/>
+    </linearGradient>
+    
+    <!-- Drop Shadows -->
+    <filter id="dropGlow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="4" stdDeviation="6" flood-color="#000000" flood-opacity="0.6"/>
+    </filter>
+    <filter id="accentGlow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="2" stdDeviation="4" flood-color="#388bfd" flood-opacity="0.4"/>
+    </filter>
+    
+    <!-- Markers -->
+    <marker id="arrBlue" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto">
+      <path d="M1,1 L7,4 L1,7 Z" fill="#58a6ff"/>
+    </marker>
+    <marker id="arrGold" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto">
+      <path d="M1,1 L7,4 L1,7 Z" fill="#e3b341"/>
+    </marker>
+    <marker id="arrGreen" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto">
+      <path d="M1,1 L7,4 L1,7 Z" fill="#3fb950"/>
+    </marker>
+    <marker id="arrPurple" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto">
+      <path d="M1,1 L7,4 L1,7 Z" fill="#bc8cff"/>
+    </marker>
+  </defs>
+
+  <!-- Title Banner -->
+  <rect x="30" y="25" width="1040" height="60" rx="10" fill="url(#headerGrad)" filter="url(#dropGlow)"/>
+  <text x="50" y="55" fill="#ffffff" font-size="20" font-weight="700">Main Memory Controller (main_memory.v) Microarchitecture</text>
+  <text x="50" y="73" fill="#e6edf3" font-size="12" font-weight="400">Author: Akshith Kumar (Member 4) | 256×32 DRAM Model with 3-Cycle Latency &amp; Handshake</text>
+  <rect x="940" y="40" width="110" height="28" rx="6" fill="#0d1117" opacity="0.8"/>
+  <text x="955" y="58" fill="#58a6ff" font-size="12" font-weight="600">Verilog HDL</text>
+
+  <!-- Main Outer Box -->
+  <rect x="180" y="110" width="740" height="460" rx="12" fill="#161b22" stroke="#30363d" stroke-width="2" filter="url(#dropGlow)"/>
+  <text x="205" y="140" fill="#f0f6fc" font-size="16" font-weight="600">module main_memory</text>
+  <text x="400" y="140" fill="#8b949e" font-size="13">#(DEPTH=256, DATA_WIDTH=32, ADDR_WIDTH=8, LATENCY=3)</text>
+
+  <!-- Left Inputs Header -->
+  <text x="45" y="130" fill="#8b949e" font-size="12" font-weight="600" letter-spacing="1">INPUT SIGNALS</text>
+  
+  <!-- Signal Lines Left -->
+  <!-- clk, rst -->
+  <line x1="40" y1="165" x2="180" y2="165" stroke="#8b949e" stroke-width="2" marker-end="url(#arrBlue)"/>
+  <text x="45" y="160" fill="#c9d1d9" font-size="12" font-family="monospace">clk</text>
+  <line x1="40" y1="195" x2="180" y2="195" stroke="#8b949e" stroke-width="2" marker-end="url(#arrBlue)"/>
+  <text x="45" y="190" fill="#c9d1d9" font-size="12" font-family="monospace">rst</text>
+
+  <!-- req -->
+  <line x1="40" y1="245" x2="230" y2="245" stroke="#58a6ff" stroke-width="2.5" marker-end="url(#arrBlue)"/>
+  <rect x="40" y="233" width="38" height="20" rx="4" fill="#1f6feb" opacity="0.3"/>
+  <text x="45" y="247" fill="#58a6ff" font-size="12" font-weight="600" font-family="monospace">req</text>
+  <text x="88" y="247" fill="#8b949e" font-size="10">(1-cycle pulse)</text>
+
+  <!-- we -->
+  <line x1="40" y1="285" x2="230" y2="285" stroke="#d29922" stroke-width="2.5" marker-end="url(#arrGold)"/>
+  <text x="45" y="280" fill="#e3b341" font-size="12" font-weight="600" font-family="monospace">we</text>
+  <text x="75" y="280" fill="#8b949e" font-size="10">(1=Write, 0=Read)</text>
+
+  <!-- addr[7:0] -->
+  <line x1="40" y1="335" x2="230" y2="335" stroke="#d29922" stroke-width="3" marker-end="url(#arrGold)"/>
+  <text x="45" y="330" fill="#e3b341" font-size="12" font-weight="600" font-family="monospace">addr [7:0]</text>
+  <text x="135" y="330" fill="#8b949e" font-size="10">8-bit</text>
+
+  <!-- wr_data[31:0] -->
+  <line x1="40" y1="385" x2="230" y2="385" stroke="#3fb950" stroke-width="3.5" marker-end="url(#arrGreen)"/>
+  <text x="45" y="380" fill="#3fb950" font-size="12" font-weight="600" font-family="monospace">wr_data [31:0]</text>
+  <text x="150" y="380" fill="#8b949e" font-size="10">32-bit</text>
+
+  <!-- SUBMODULE 1: Request Latch Unit -->
+  <rect x="230" y="180" width="210" height="240" rx="8" fill="#0d1117" stroke="#388bfd" stroke-width="1.5" filter="url(#accentGlow)"/>
+  <rect x="230" y="180" width="210" height="32" rx="8" fill="#1f6feb" opacity="0.3"/>
+  <text x="245" y="202" fill="#58a6ff" font-size="13" font-weight="600">1. Request Latch Unit</text>
+  
+  <rect x="245" y="225" width="180" height="30" rx="5" fill="#161b22" stroke="#30363d"/>
+  <text x="255" y="245" fill="#f0f6fc" font-size="11" font-family="monospace">pending (1 bit)</text>
+
+  <rect x="245" y="265" width="180" height="30" rx="5" fill="#161b22" stroke="#30363d"/>
+  <text x="255" y="285" fill="#e3b341" font-size="11" font-family="monospace">pending_we (1 bit)</text>
+
+  <rect x="245" y="305" width="180" height="30" rx="5" fill="#161b22" stroke="#30363d"/>
+  <text x="255" y="325" fill="#e3b341" font-size="11" font-family="monospace">pending_addr [7:0]</text>
+
+  <rect x="245" y="345" width="180" height="30" rx="5" fill="#161b22" stroke="#30363d"/>
+  <text x="255" y="365" fill="#3fb950" font-size="11" font-family="monospace">pending_wr_data [31:0]</text>
+
+  <text x="245" y="405" fill="#8b949e" font-size="10">Latches when req &amp;&amp; !pending</text>
+
+  <!-- Connection: Latch to Timer -->
+  <path d="M440 245 L500 245" stroke="#58a6ff" stroke-width="2.5" marker-end="url(#arrBlue)"/>
+  <text x="450" y="238" fill="#58a6ff" font-size="9" font-family="monospace">pending</text>
+
+  <!-- SUBMODULE 2: 3-Cycle Latency Engine -->
+  <rect x="500" y="180" width="170" height="150" rx="8" fill="#0d1117" stroke="#f85149" stroke-width="1.5"/>
+  <rect x="500" y="180" width="170" height="32" rx="8" fill="#da3633" opacity="0.3"/>
+  <text x="512" y="202" fill="#ff7b72" font-size="12" font-weight="600">2. Latency Controller</text>
+
+  <rect x="515" y="225" width="140" height="36" rx="5" fill="#161b22" stroke="#30363d"/>
+  <text x="525" y="247" fill="#ff7b72" font-size="11" font-family="monospace">delay_cnt [1:0]</text>
+  <text x="525" y="278" fill="#8b949e" font-size="10">Counts 0 → 1 → 2</text>
+  <text x="525" y="295" fill="#8b949e" font-size="10">(LATENCY - 1 cycles)</text>
+  <text x="525" y="318" fill="#3fb950" font-size="10" font-weight="600">Expires at Cycle 3</text>
+
+  <!-- Connection: Timer to DRAM Core -->
+  <path d="M670 245 L730 245" stroke="#f85149" stroke-width="2" marker-end="url(#arrBlue)"/>
+  <text x="675" y="238" fill="#ff7b72" font-size="9">delay_cnt==2</text>
+
+  <!-- SUBMODULE 3: DRAM Storage Core -->
+  <rect x="730" y="180" width="170" height="260" rx="8" fill="#0d1117" stroke="#a371f7" stroke-width="1.5"/>
+  <rect x="730" y="180" width="170" height="32" rx="8" fill="#8957e5" opacity="0.3"/>
+  <text x="745" y="202" fill="#bc8cff" font-size="12" font-weight="600">3. DRAM Core Array</text>
+  <text x="745" y="230" fill="#c9d1d9" font-size="11" font-weight="600">mem [0:255]</text>
+  <text x="745" y="246" fill="#8b949e" font-size="10">256 × 32-bit words</text>
+
+  <!-- Memory Map mini table -->
+  <rect x="740" y="260" width="150" height="95" rx="5" fill="#161b22" stroke="#30363d"/>
+  <text x="748" y="277" fill="#8b949e" font-size="9" font-family="monospace">0x00: 0xDEADBEEF</text>
+  <text x="748" y="293" fill="#8b949e" font-size="9" font-family="monospace">0x01: 0xCAFEBABE</text>
+  <text x="748" y="309" fill="#8b949e" font-size="9" font-family="monospace">0x02: 0x12345678</text>
+  <text x="748" y="325" fill="#8b949e" font-size="9" font-family="monospace">0x05: 0x0000000A</text>
+  <text x="748" y="341" fill="#8b949e" font-size="9" font-family="monospace">0x06: 0x00000014</text>
+
+  <!-- Connection: Latch Address and Data to DRAM -->
+  <path d="M440 320 L730 320" stroke="#e3b341" stroke-width="2" stroke-dasharray="4,3" marker-end="url(#arrGold)"/>
+  <path d="M440 360 L730 360" stroke="#3fb950" stroke-width="2" stroke-dasharray="4,3" marker-end="url(#arrGreen)"/>
+
+  <!-- Read Data Output -->
+  <path d="M900 245 L1040 245" stroke="#3fb950" stroke-width="3.5" marker-end="url(#arrGreen)"/>
+  <text x="920" y="235" fill="#3fb950" font-size="13" font-weight="600" font-family="monospace">rd_data [31:0]</text>
+  <text x="920" y="260" fill="#8b949e" font-size="10">Valid when ready=1</text>
+
+  <!-- Ready Strobe Output -->
+  <path d="M670 295 L700 295 L700 400 L1040 400" stroke="#58a6ff" stroke-width="2.5" marker-end="url(#arrBlue)"/>
+  <rect x="915" y="388" width="55" height="22" rx="4" fill="#1f6feb" opacity="0.3"/>
+  <text x="925" y="403" fill="#58a6ff" font-size="13" font-weight="600" font-family="monospace">ready</text>
+  <text x="980" y="403" fill="#8b949e" font-size="10">(1-cycle strobe)</text>
+
+  <!-- SUBMODULE 4: Performance & Instrumentation (Bottom) -->
+  <rect x="230" y="460" width="670" height="85" rx="8" fill="#0d1117" stroke="#238636" stroke-width="1.5"/>
+  <rect x="230" y="460" width="670" height="26" rx="8" fill="#2ea043" opacity="0.2"/>
+  <text x="245" y="478" fill="#3fb950" font-size="12" font-weight="600">4. Performance Instrumentation &amp; Simulation Tracing</text>
+  
+  <rect x="245" y="495" width="180" height="38" rx="5" fill="#161b22" stroke="#30363d"/>
+  <text x="255" y="512" fill="#c9d1d9" font-size="11" font-family="monospace">access_count [31:0]</text>
+  <text x="255" y="525" fill="#8b949e" font-size="9">Total DRAM accesses counter</text>
+
+  <rect x="440" y="495" width="220" height="38" rx="5" fill="#161b22" stroke="#30363d"/>
+  <text x="450" y="512" fill="#c9d1d9" font-size="10" font-family="monospace">// synthesis translate_off</text>
+  <text x="450" y="525" fill="#58a6ff" font-size="9">Cycle-by-cycle $display traces</text>
+
+  <rect x="675" y="495" width="210" height="38" rx="5" fill="#161b22" stroke="#30363d"/>
+  <text x="685" y="512" fill="#c9d1d9" font-size="10" font-family="monospace">final begin $display(...) end</text>
+  <text x="685" y="525" fill="#bc8cff" font-size="9">End-of-test access summary</text>
+
+  <!-- TIMING WAVEFORM SECTION (BOTTOM PANEL) -->
+  <rect x="30" y="600" width="1040" height="195" rx="10" fill="#161b22" stroke="#30363d" stroke-width="1.5"/>
+  <text x="50" y="625" fill="#f0f6fc" font-size="14" font-weight="600">3-Cycle DRAM Latency Timing Waveform (Read Miss Example)</text>
+
+  <!-- Cycle Headers -->
+  <text x="250" y="625" fill="#8b949e" font-size="11" font-family="monospace">Cycle 0 (req)</text>
+  <text x="420" y="625" fill="#8b949e" font-size="11" font-family="monospace">Cycle 1 (wait)</text>
+  <text x="590" y="625" fill="#8b949e" font-size="11" font-family="monospace">Cycle 2 (wait)</text>
+  <text x="760" y="625" fill="#8b949e" font-size="11" font-family="monospace">Cycle 3 (ready)</text>
+  <text x="930" y="625" fill="#8b949e" font-size="11" font-family="monospace">Cycle 4 (idle)</text>
+
+  <!-- Waveform 1: clk -->
+  <text x="50" y="655" fill="#8b949e" font-size="11" font-family="monospace">clk</text>
+  <path d="M160 658 L200 658 L200 642 L240 642 L240 658 L280 658 L280 642 L320 642 L320 658 L360 658 L360 642 L400 642 L400 658 L440 658 L440 642 L480 642 L480 658 L520 658 L520 642 L560 642 L560 658 L600 658 L600 642 L640 642 L640 658 L680 658 L680 642 L720 642 L720 658 L760 658 L760 642 L800 642 L800 658 L840 658 L840 642 L880 642 L880 658 L920 658 L920 642 L960 642 L960 658 L1000 658" stroke="#8b949e" stroke-width="1.5" fill="none"/>
+
+  <!-- Waveform 2: req -->
+  <text x="50" y="682" fill="#58a6ff" font-size="11" font-family="monospace">req</text>
+  <path d="M160 685 L200 685 L200 670 L280 670 L280 685 L1000 685" stroke="#58a6ff" stroke-width="2" fill="none"/>
+
+  <!-- Waveform 3: pending -->
+  <text x="50" y="710" fill="#ff7b72" font-size="11" font-family="monospace">pending</text>
+  <path d="M160 715 L280 715 L280 700 L800 700 L800 715 L1000 715" stroke="#ff7b72" stroke-width="2" fill="none"/>
+
+  <!-- Waveform 4: delay_cnt -->
+  <text x="50" y="738" fill="#d29922" font-size="11" font-family="monospace">delay_cnt</text>
+  <rect x="280" y="725" width="160" height="20" rx="3" fill="#21262d" stroke="#d29922"/>
+  <text x="350" y="739" fill="#e3b341" font-size="11" font-family="monospace">0</text>
+  <rect x="445" y="725" width="160" height="20" rx="3" fill="#21262d" stroke="#d29922"/>
+  <text x="520" y="739" fill="#e3b341" font-size="11" font-family="monospace">1</text>
+  <rect x="610" y="725" width="180" height="20" rx="3" fill="#21262d" stroke="#d29922"/>
+  <text x="695" y="739" fill="#e3b341" font-size="11" font-family="monospace">2</text>
+  <rect x="795" y="725" width="205" height="20" rx="3" fill="#21262d" stroke="#d29922"/>
+  <text x="890" y="739" fill="#8b949e" font-size="11" font-family="monospace">0 (idle)</text>
+
+  <!-- Waveform 5: rd_data & ready -->
+  <text x="50" y="768" fill="#3fb950" font-size="11" font-family="monospace">ready / rd_data</text>
+  <!-- ready pulse -->
+  <path d="M160 770 L760 770 L760 755 L840 755 L840 770 L1000 770" stroke="#58a6ff" stroke-width="2" fill="none"/>
+  <!-- rd_data valid -->
+  <rect x="760" y="756" width="240" height="18" rx="3" fill="#1f6feb" opacity="0.3" stroke="#3fb950"/>
+  <text x="810" y="769" fill="#3fb950" font-size="10" font-weight="600" font-family="monospace">rd_data = mem[addr] (VALID)</text>
+
+</svg>
