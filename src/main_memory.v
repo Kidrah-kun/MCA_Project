@@ -132,6 +132,10 @@ module main_memory #(
                          pending_addr, mem[pending_addr], access_count + 1);
         end
     end
+
+    final begin
+        $display("[Main Mem] Total accesses: %0d", access_count);
+    end
     // synthesis translate_on
 
 endmodule
