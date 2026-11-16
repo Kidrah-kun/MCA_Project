@@ -54,6 +54,7 @@ module cache_controller (
     output reg  [7:0]  mem_addr,         // Address driven to main memory
     output reg         mem_we,           // Write-enable to main memory
     output reg  [31:0] mem_wr_data,      // Write data to main memory
+    output reg         mem_req,          // Request strobe to main memory
     input  wire [31:0] mem_rd_data,      // Read data from main memory
     input  wire        mem_ready,        // Memory data-ready strobe
 
@@ -128,6 +129,7 @@ module cache_controller (
         mem_addr     = 8'b0;
         mem_we       = 1'b0;
         mem_wr_data  = 32'b0;
+        mem_req      = 1'b0;
 
         case (state)
 
@@ -141,6 +143,7 @@ module cache_controller (
                     mem_addr    = dcache_addr;
                     mem_we      = dcache_we;
                     mem_wr_data = dcache_wr_data;
+                    mem_req     = 1'b1;
                     if (dcache_we) begin
                         // Write completes in 1 cycle — stay IDLE
                         dcache_ready = 1'b1;
@@ -153,6 +156,7 @@ module cache_controller (
                     // --- I-Cache (lower priority, only when D quiet) ---
                     mem_addr   = icache_addr;
                     mem_we     = 1'b0;
+                    mem_req    = 1'b1;
                     next_state = SERVE_I;
                 end
                 // else: nothing pending — stay IDLE
@@ -164,6 +168,7 @@ module cache_controller (
             SERVE_D: begin
                 mem_addr = dcache_addr;
                 mem_we   = 1'b0;
+                mem_req  = !mem_ready;
                 if (mem_ready) begin
                     dcache_data  = mem_rd_data;
                     dcache_ready = 1'b1;
@@ -177,6 +182,7 @@ module cache_controller (
             SERVE_I: begin
                 mem_addr = icache_addr;
                 mem_we   = 1'b0;
+                mem_req  = !mem_ready;
                 if (mem_ready) begin
                     icache_data  = mem_rd_data;
                     icache_ready = 1'b1;

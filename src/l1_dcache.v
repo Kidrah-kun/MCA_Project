@@ -76,19 +76,20 @@ module l1_dcache (
                     hit         <= 1;
                     cpu_rd_data <= cache_data[index];
                 end else begin
-                    // MISS — fetch from main memory
+                if (mem_ready) begin
+                    cache_data[index]  <= mem_data;
+                    cache_tag[index]   <= tag;
+                    cache_valid[index] <= 1'b1;
+                    cpu_rd_data        <= mem_data;
+                    cpu_stall          <= 0;
+                    mem_req            <= 0;
+                    miss               <= 0;
+                end else begin
                     miss      <= 1;
                     cpu_stall <= 1;
                     mem_req   <= 1;
                     mem_addr  <= cpu_addr;
-
-                    if (mem_ready) begin
-                        cache_data[index]  <= mem_data;
-                        cache_tag[index]   <= tag;
-                        cache_valid[index] <= 1'b1;
-                        cpu_rd_data        <= mem_data;
-                        cpu_stall          <= 0;
-                    end
+                end
                 end
             end else begin
                 // --- WRITE (Write-Through) ---

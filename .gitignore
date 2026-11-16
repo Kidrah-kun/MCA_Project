@@ -1,8 +1,9 @@
-# Simulation outputs
+# Simulation outputs & compiled binaries
 *.vcd
 *.lxt
 *.vvp
 *.out
+sim/memory_hierarchy
 sim/waveforms/*.vcd
 
 # Compiled objects

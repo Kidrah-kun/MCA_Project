@@ -12,24 +12,24 @@
 This project implements a **complete Instruction and Data Memory Hierarchy** in Verilog HDL, simulating the multi-level memory subsystem found in modern processors. The hierarchy spans from CPU-facing instruction/data caches down to main memory, with a fully functional cache controller implementing set-associative mapping and LRU replacement.
 
 ### Key Features
-- ✅ Instruction Memory (ROM-based, word-addressable)
-- ✅ Data Memory (RAM-based, byte-addressable)
-- ✅ Direct-Mapped Cache with hit/miss detection
-- ✅ Cache Controller (Write-through policy)
-- ✅ Unified Main Memory backing store
-- ✅ Full testbench with waveform output
+- ✅ **Harvard Memory Architecture:** Dedicated, concurrent L1 Instruction Cache (`l1_icache.v`) and L1 Data Cache (`l1_dcache.v`)
+- ✅ **Direct-Mapped Organization:** 8-line caches with 3-bit tag, 3-bit index, and single-cycle hit latency
+- ✅ **Write-Through Coherence:** Immediate write propagation to main memory, guaranteeing consistency without dirty bits
+- ✅ **Priority-Based Cache Arbiter:** 3-state FSM controller granting D-Cache priority over I-Cache during simultaneous misses
+- ✅ **Realistic DRAM Modeling:** Parameterizable 3-cycle memory latency with asynchronous/synchronous request-ready handshake
+- ✅ **Automated Verification:** 7-scenario self-checking testbench (`memory_hierarchy_tb.v`) with GTKWave `.vcd` waveform dumping
 
 ---
 
 ## 👥 Group Members
 
-| Name | GitHub | Role |
-|------|--------|------|
-| Hardik Hathwal | [@Kidrah-kun](https://github.com/Kidrah-kun) | Instruction Memory & Cache Design (`l1_icache.v`) |
-| Kabir Sharma | [@Kabir-glitch](https://github.com/Kabir-glitch) | Data Memory Module (`l1_dcache.v`) |
-| Abhinav Chaudhary | [@AbhinavChoudhary](https://github.com/AbhinavChoudhary) | Cache Controller FSM (`cache_controller.v`) |
-| Akshith Kumar | [@AkshithKumar](https://github.com/AkshithKumar) | Main Memory Module & Top-Level (`main_memory.v`, `memory_hierarchy_top.v`) |
-| Ayush Tiwari | [@AyushTiwari](https://github.com/AyushTiwari) | Testbench & Integration (`memory_hierarchy_tb.v`) |
+| Name | GitHub | Role & Primary Module |
+|------|--------|-----------------------|
+| Hardik Hathwal | [@Kidrah-kun](https://github.com/Kidrah-kun) | Lead, L1 Instruction Cache (`l1_icache.v`), IEEE Report |
+| Kabir Sharma | [@Kabir-glitch](https://github.com/Kabir-glitch) | L1 Data Cache (`l1_dcache.v`) & Write-Through Policy |
+| Abhinav Chaudhary | [@AbhinavChoudhary](https://github.com/AbhinavChoudhary) | Cache Controller & Priority Arbiter FSM (`cache_controller.v`) |
+| Akshith Kumar | [@AkshithKumar](https://github.com/AkshithKumar) | DRAM Controller (`main_memory.v`) & Top-Level (`memory_hierarchy_top.v`) |
+| Ayush Tiwari | [@AyushTiwari](https://github.com/AyushTiwari) | Verification Testbench & Simulation (`memory_hierarchy_tb.v`) |
 
 ---
 
@@ -38,30 +38,30 @@ This project implements a **complete Instruction and Data Memory Hierarchy** in 
 ```
 MCA_Project/
 │
-├── src/                        # Verilog HDL source files
+├── src/                        # Synthesizable Verilog HDL modules
 │   ├── l1_icache.v             # L1 Instruction Cache (8 lines, direct-mapped, read-only)
 │   ├── l1_dcache.v             # L1 Data Cache (8 lines, write-through, read/write)
 │   ├── cache_controller.v      # Cache Arbiter FSM (3 states, D-cache priority)
 │   ├── main_memory.v           # DRAM controller (3-cycle latency, req/ready handshake)
-│   ├── memory_hierarchy_top.v  # Top-level integration module
-│   ├── instruction_memory.v    # Baseline instruction ROM
-│   └── data_memory.v           # Baseline data RAM
+│   └── memory_hierarchy_top.v  # Top-level integration module
 │
 ├── testbench/                  # Simulation testbenches
 │   └── memory_hierarchy_tb.v   # Full system testbench (7 validation test cases)
 │
-├── docs/                       # Documentation & report
-│   ├── report/                 # IEEE project report (PDF, DOCX, Markdown)
-│   │   ├── IEEE_Report_MCA_Group.pdf
-│   │   ├── IEEE_Report_MCA_Group.docx
-│   │   └── IEEE_Report_Draft.md
-│   └── diagrams/               # Architecture block diagrams & specifications
-│       └── architecture.md
+├── docs/                       # Documentation, architecture specs, and reports
+│   ├── Prototype_Video_Script.md # 5-minute prototype demo video recording script
+│   ├── diagrams/
+│   │   └── architecture.md     # System block diagrams, address split & FSM tables
+│   └── report/
+│       ├── IEEE_Report_MCA_Group.pdf   # Official Phase I IEEE Project Report (PDF)
+│       ├── IEEE_Report_MCA_Group.docx  # Word Document version
+│       └── IEEE_Report.md              # Markdown source document
 │
 ├── sim/                        # Simulation outputs
-│   └── waveforms/              # GTKWave .vcd dump files
+│   └── waveforms/              # GTKWave .vcd dump files (dump.vcd)
 │
-└── README.md
+├── .gitignore                  # Git exclusions for build and waveform artifacts
+└── README.md                   # Project documentation
 ```
 
 ---
@@ -103,16 +103,19 @@ MCA_Project/
 ### Running the Simulation
 
 ```bash
-# Install Icarus Verilog (macOS)
+# Install Icarus Verilog and GTKWave (macOS)
 brew install icarus-verilog gtkwave
 
-# Compile
+# Compile all Verilog modules with testbench
 iverilog -o sim/memory_hierarchy testbench/memory_hierarchy_tb.v src/*.v
 
-# Simulate
+# Execute simulation
 vvp sim/memory_hierarchy
 
-# View waveforms
+# Output confirms 7/7 test cases passing:
+# === Done: 7 PASS, 0 FAIL ===
+
+# View interactive waveforms in GTKWave
 gtkwave sim/waveforms/dump.vcd
 ```
 
@@ -126,7 +129,7 @@ gtkwave sim/waveforms/dump.vcd
 
 ## 📄 Report
 
-> 📄 **[IEEE Project Report (PDF)](docs/report/IEEE_Report_MCA_Group.pdf)** | **[Word Document](docs/report/IEEE_Report_MCA_Group.docx)** | **[Markdown Source](docs/report/IEEE_Report_Draft.md)**
+> 📄 **[IEEE Project Report (PDF)](docs/report/IEEE_Report_MCA_Group.pdf)** | **[Word Document](docs/report/IEEE_Report_MCA_Group.docx)** | **[Markdown Source](docs/report/IEEE_Report.md)**
 
 ---
 

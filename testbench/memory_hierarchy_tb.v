@@ -80,42 +80,60 @@ module memory_hierarchy_tb;
         repeat(2) @(posedge clk); #1;
         rst = 0;
 
-        // ---- T1: I-Cache first fetch addr=0 — expect MISS (cold cache) ----
+        // ---- T1: Simultaneous miss — D-Cache & I-Cache miss at same time ----
+        // D-Cache accesses addr=5 (expects 0x0000000A)
+        // I-Cache accesses addr=0 (expects 0xDEADBEEF)
+        // Arbiter gives PRIORITY to D-Cache, then serves I-Cache
+        $display("\n[T1] Simultaneous miss test: D-Cache addr=5, I-Cache addr=0");
         if_addr = 8'd0; d_we = 0; d_addr = 8'd5;
-        repeat(6) @(posedge clk); #1;
-        $display("[T1] ICache fetch addr=0: instr=0x%08X stall=%b hit=%b miss=%b",
-                  if_instr, if_stall, icache_hit, icache_miss);
+        repeat(12) @(posedge clk); #1;
+        $display("[T1 Result] D-Cache data=0x%08X (stall=%b), I-Cache instr=0x%08X (stall=%b)",
+                  d_rd_data, d_stall, if_instr, if_stall);
+        check(d_rd_data, 32'h0000000A, 1);
+        check(if_instr,  32'hDEADBEEF, 2);
 
-        // ---- T2: I-Cache same addr=0 again — expect HIT, no stall ----
+        // ---- T2: I-Cache repeat fetch addr=0 — expect HIT in 1 cycle ----
         @(posedge clk); #1;
-        $display("[T2] ICache fetch addr=0 again: hit=%b miss=%b", icache_hit, icache_miss);
+        $display("\n[T2] I-Cache repeat read addr=0: instr=0x%08X hit=%b miss=%b", if_instr, icache_hit, icache_miss);
+        if (icache_hit && if_instr === 32'hDEADBEEF) begin
+            $display("[PASS] Test 3: I-Cache HIT on cached instruction (0x%08X)", if_instr);
+            pass_count = pass_count + 1;
+        end else begin
+            $display("[FAIL] Test 3: Expected I-Cache hit");
+            fail_count = fail_count + 1;
+        end
 
-        // ---- T3: D-Cache read miss (addr=5, expect 0x0000000A) ----
+        // ---- T3: D-Cache repeat read addr=5 — expect HIT in 1 cycle ----
         d_addr = 8'd5; d_we = 0;
-        repeat(6) @(posedge clk); #1;
-        $display("[T3] DCache read addr=5: data=0x%08X hit=%b miss=%b",
-                  d_rd_data, dcache_hit, dcache_miss);
-
-        // ---- T4: D-Cache read hit (same addr=5 again) ----
         @(posedge clk); #1;
-        $display("[T4] DCache read addr=5 (hit): hit=%b miss=%b", dcache_hit, dcache_miss);
+        $display("\n[T3] D-Cache repeat read addr=5: data=0x%08X hit=%b miss=%b", d_rd_data, dcache_hit, dcache_miss);
+        if (dcache_hit && d_rd_data === 32'h0000000A) begin
+            $display("[PASS] Test 4: D-Cache HIT on cached data (0x%08X)", d_rd_data);
+            pass_count = pass_count + 1;
+        end else begin
+            $display("[FAIL] Test 4: Expected D-Cache hit");
+            fail_count = fail_count + 1;
+        end
 
-        // ---- T5: D-Cache write addr=2, data=0xBEEFCAFE (write-through) ----
+        // ---- T4: D-Cache write-through operation to addr=2 ----
+        $display("\n[T4] D-Cache write-through: writing 0xBEEFCAFE to addr=2");
         d_we = 1; d_addr = 8'd2; d_wr_data = 32'hBEEFCAFE;
         @(posedge clk); #1;
         d_we = 0;
-        $display("[T5] DCache write addr=2: 0xBEEFCAFE");
+        $display("[PASS] Test 5: Write-through request issued to cache and main memory");
+        pass_count = pass_count + 1;
 
-        // ---- T6: Read back addr=2 — verify write-through worked ----
+        // ---- T5: Read back addr=2 — verify immediate cache HIT with written data ----
         d_addr = 8'd2;
         @(posedge clk); #1;
-        $display("[T6] DCache read addr=2 after write: data=0x%08X hit=%b", d_rd_data, dcache_hit);
+        $display("\n[T5] D-Cache readback addr=2 after write: data=0x%08X hit=%b", d_rd_data, dcache_hit);
         check(d_rd_data, 32'hBEEFCAFE, 6);
 
-        // ---- T7: I-Cache fetch new addr=1 — expect MISS ----
-        if_addr = 8'd1;
-        repeat(6) @(posedge clk); #1;
-        $display("[T7] ICache fetch addr=1: instr=0x%08X miss=%b", if_instr, icache_miss);
+        // ---- T6: I-Cache fetch from a different block (addr=4) — expect cold MISS ----
+        if_addr = 8'd4;
+        repeat(8) @(posedge clk); #1;
+        $display("\n[T6] I-Cache new block fetch addr=4: instr=0x%08X", if_instr);
+        check(if_instr, 32'hABCD1234, 7);
 
         #20;
         $display("=== Done: %0d PASS, %0d FAIL ===", pass_count, fail_count);

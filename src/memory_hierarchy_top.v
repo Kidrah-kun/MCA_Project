@@ -103,6 +103,7 @@ module memory_hierarchy_top (
         .mem_addr      (mem_addr),
         .mem_we        (mem_we),
         .mem_wr_data   (mem_wr_data),
+        .mem_req       (mem_req),
         .mem_rd_data   (mem_rd_data),
         .mem_ready     (mem_ready)
     );
@@ -114,7 +115,7 @@ module memory_hierarchy_top (
         .addr    (mem_addr),
         .we      (mem_we),
         .wr_data (mem_wr_data),
-        .req     (mem_we | (icache_req | dcache_req)),
+        .req     (mem_req),
         .rd_data (mem_rd_data),
         .ready   (mem_ready)
     );
