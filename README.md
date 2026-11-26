@@ -25,7 +25,7 @@ This project implements a **complete Instruction and Data Memory Hierarchy** in 
 
 | Name | GitHub | Role & Primary Module |
 |------|--------|-----------------------|
-| Hardik Hathwal | [@Kidrah-kun](https://github.com/Kidrah-kun) | Lead, L1 Instruction Cache (`l1_icache.v`), IEEE Report |
+| Hardik Hathwal | [@Kidrah-kun](https://github.com/Kidrah-kun) | Lead, L1 Instruction Cache (`l1_icache.v`), Interactive Dashboard (`dashboard.html`), IEEE Report |
 | Kabir Sharma | [@Kabir-glitch](https://github.com/Kabir-glitch) | L1 Data Cache (`l1_dcache.v`) & Write-Through Policy |
 | Abhinav Choudhary | [@AbhinavChoudhary](https://github.com/AbhinavChoudhary) | Cache Controller & Priority Arbiter FSM (`cache_controller.v`) |
 | Akshith Kumar | [@AkshithKumar](https://github.com/AkshithKumar) | DRAM Controller (`main_memory.v`) & Top-Level (`memory_hierarchy_top.v`) |
@@ -60,6 +60,7 @@ MCA_Project/
 ├── sim/                        # Simulation outputs
 │   └── waveforms/              # GTKWave .vcd dump files (dump.vcd)
 │
+├── dashboard.html              # Interactive simulation visualizer dashboard
 ├── .gitignore                  # Git exclusions for build and waveform artifacts
 └── README.md                   # Project documentation
 ```

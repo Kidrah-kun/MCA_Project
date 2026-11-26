@@ -32,7 +32,7 @@ header-includes:
 \begin{tabular}{lll}
 \textbf{Name} & \textbf{Role} \\
 \hline
-Hardik Hathwal   & Instruction Memory \& Cache Design (L1 I-Cache) \\
+Hardik Hathwal   & Instruction Memory \& Cache Design (L1 I-Cache), Interactive Dashboard \\
 Kabir Sharma     & Data Memory Module (L1 D-Cache) \\
 Abhinav Chaudhary & Cache Controller (FSM Arbiter) \\
 Akshith Kumar    & Main Memory Module \& Top-Level Integration \\
@@ -150,7 +150,7 @@ The top-level module instantiates all four sub-modules and connects them via int
 
 | Member              | File(s) Owned                                      | Contribution Summary                                                                                           |
 |---------------------|----------------------------------------------------|----------------------------------------------------------------------------------------------------------------|
-| **Hardik Hathwal**  | `src/l1_icache.v`, `docs/`                        | Designed and implemented the L1 Instruction Cache — direct-mapped, parameterizable, with hit/miss detection, stall generation, and performance counters. Also authored the IEEE report and architecture diagrams. |
+| **Hardik Hathwal**  | `src/l1_icache.v`, `dashboard.html`, `docs/`       | Designed and implemented the L1 Instruction Cache — direct-mapped, parameterizable, with hit/miss detection, stall generation, and performance counters. Built the interactive simulation dashboard (`dashboard.html`) and authored the IEEE report and architecture diagrams. |
 | **Kabir Sharma**    | `src/l1_dcache.v`                                 | Designed and implemented the L1 Data Cache — read/write support, write-through policy, hit/miss logic, and simulation debug display. |
 | **Abhinav Chaudhary** | `src/cache_controller.v`                        | Designed and implemented the Cache Arbiter FSM — 3-state priority-based arbitration between I-Cache and D-Cache miss requests, busy signal, and request counters. |
 | **Akshith Kumar**   | `src/main_memory.v`, `src/memory_hierarchy_top.v` | Designed the DRAM latency model with req/ready handshake and access counters; assembled all modules in the top-level integration with clean port wiring. |
