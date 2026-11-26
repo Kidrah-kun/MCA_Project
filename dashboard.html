@@ -58,7 +58,7 @@ header{background:linear-gradient(135deg,#0d1829 0%,#132040 100%);border-bottom:
 .cb::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px;}
 
 /* ── ARCHITECTURE SVG ── */
-.arch-wrap{flex:0 0 auto;height:200px;padding:0!important;position:relative;}
+.arch-wrap{flex:0 0 auto;height:218px;padding:0!important;position:relative;}
 #asvg{width:100%;height:100%;}
 
 /* ── NARRATOR ── */
@@ -269,7 +269,7 @@ header{background:linear-gradient(135deg,#0d1829 0%,#132040 100%);border-bottom:
 
     <!-- ARCHITECTURE -->
     <div class="card arch-wrap">
-      <svg id="asvg" viewBox="0 0 680 196" preserveAspectRatio="xMidYMid meet">
+      <svg id="asvg" viewBox="0 0 680 210" preserveAspectRatio="xMidYMid meet">
         <defs>
           <filter id="glow"><feGaussianBlur stdDeviation="2.5" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
           <marker id="ag" markerWidth="7" markerHeight="7" refX="3.5" refY="3.5" orient="auto"><path d="M0,0 L7,3.5 L0,7Z" fill="#10b981"/></marker>
@@ -300,9 +300,9 @@ header{background:linear-gradient(135deg,#0d1829 0%,#132040 100%);border-bottom:
         <text x="340" y="132" fill="#64748b" font-size="7" text-anchor="middle" font-family="monospace">FSM Arbiter | D-Cache Priority | 3 States</text>
         <text x="340" y="91" fill="#6ee7b7" font-size="6.5" text-anchor="middle" font-family="monospace">Abhinav Chaudhary</text>
         <!-- Main Memory -->
-        <rect x="224" y="161" width="232" height="30" rx="8" fill="#1a0d10" stroke="#f59e0b" stroke-width="1.5" id="bx-mm"/>
-        <text x="340" y="175" fill="#fcd34d" font-size="10" font-weight="700" text-anchor="middle" font-family="monospace">MAIN MEMORY (DRAM)</text>
-        <text x="340" y="186" fill="#64748b" font-size="7" text-anchor="middle" font-family="monospace">256×32-bit | 3-Cycle Latency | Akshith Kumar</text>
+        <rect x="224" y="168" width="232" height="34" rx="8" fill="#1a0d10" stroke="#f59e0b" stroke-width="1.5" id="bx-mm"/>
+        <text x="340" y="183" fill="#fcd34d" font-size="10" font-weight="700" text-anchor="middle" font-family="monospace">MAIN MEMORY (DRAM)</text>
+        <text x="340" y="196" fill="#64748b" font-size="7" text-anchor="middle" font-family="monospace">256×32-bit | 3-Cycle Latency | Akshith Kumar</text>
         <!-- Lines -->
         <line x1="250" y1="31" x2="130" y2="98" stroke="#3b82f6" stroke-width=".9" stroke-dasharray="4 3" opacity=".45"/>
         <text x="176" y="62" fill="#3b82f6" font-size="6.5" text-anchor="middle" font-family="monospace">if_addr</text>
@@ -312,8 +312,8 @@ header{background:linear-gradient(135deg,#0d1829 0%,#132040 100%);border-bottom:
         <text x="162" y="148" fill="#8b5cf6" font-size="6" text-anchor="middle" font-family="monospace">miss</text>
         <line x1="576" y1="158" x2="430" y2="121" stroke="#8b5cf6" stroke-width=".9" stroke-dasharray="3 3" opacity=".45"/>
         <text x="520" y="148" fill="#8b5cf6" font-size="6" text-anchor="middle" font-family="monospace">miss</text>
-        <line x1="340" y1="144" x2="340" y2="161" stroke="#f59e0b" stroke-width=".9" stroke-dasharray="3 3" opacity=".45"/>
-        <text x="362" y="156" fill="#f59e0b" font-size="6" font-family="monospace">mem_req</text>
+        <line x1="340" y1="144" x2="340" y2="168" stroke="#f59e0b" stroke-width=".9" stroke-dasharray="3 3" opacity=".45"/>
+        <text x="362" y="160" fill="#f59e0b" font-size="6" font-family="monospace">mem_req</text>
         <!-- stall back -->
         <line x1="106" y1="98" x2="240" y2="54" stroke="#ef4444" stroke-width=".7" stroke-dasharray="2 3" opacity=".3" marker-end="url(#ar)"/>
         <text x="162" y="74" fill="#ef4444" font-size="5.5" text-anchor="middle" opacity=".6">if_stall</text>
