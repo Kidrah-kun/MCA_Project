@@ -133,9 +133,7 @@ module main_memory #(
         end
     end
 
-    final begin
-        $display("[Main Mem] Total accesses: %0d", access_count);
-    end
+    // Note: 'final' block removed for Icarus Verilog compatibility (SystemVerilog only)
     // synthesis translate_on
 
 endmodule

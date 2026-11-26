@@ -149,7 +149,7 @@ module memory_hierarchy_top (
         .icache_data   (icache_mem_data),
         .icache_ready  (icache_mem_ready),
         .dcache_req    (dcache_req),
-        .dcache_we     (dcache_we),
+        .dcache_we     (dcache_mem_we),
         .dcache_addr   (dcache_mem_addr),
         .dcache_wr_data(dcache_mem_wr_data),
         .dcache_data   (dcache_mem_data),

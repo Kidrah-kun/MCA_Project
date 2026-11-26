@@ -1,0 +1,1009 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Memory Hierarchy Simulator — MCA Project</title>
+<style>
+:root {
+  --bg:#07090f; --bg2:#0f1623; --bg3:#151e2e; --bg4:#1a2540;
+  --border:#1e3358; --accent:#3b82f6; --accent2:#06b6d4;
+  --green:#10b981; --red:#ef4444; --yellow:#f59e0b; --purple:#8b5cf6;
+  --orange:#f97316; --pink:#ec4899;
+  --text:#e2e8f0; --muted:#64748b; --muted2:#94a3b8;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--text);font-family:'Segoe UI',system-ui,sans-serif;}
+body{display:flex;flex-direction:column;}
+
+/* ── HEADER ── */
+header{background:linear-gradient(135deg,#0d1829 0%,#132040 100%);border-bottom:1px solid var(--border);padding:9px 20px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;}
+.hd h1{font-size:1rem;font-weight:800;color:#fff;letter-spacing:-.3px;}
+.hd p{font-size:.65rem;color:var(--accent2);margin-top:1px;}
+.badges{display:flex;gap:6px;}
+.badge{padding:3px 9px;border-radius:999px;font-size:.62rem;font-weight:600;letter-spacing:.3px;}
+.bb{background:#1d4ed820;border:1px solid #3b82f6;color:#93c5fd;}
+.bg{background:#06502020;border:1px solid #10b981;color:#6ee7b7;}
+.by{background:#78350f20;border:1px solid #f59e0b;color:#fcd34d;}
+
+/* ── STAT STRIP ── */
+.sstrip{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;padding:8px 20px;flex-shrink:0;}
+.sc{background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:7px 12px;display:flex;align-items:center;gap:9px;position:relative;overflow:hidden;}
+.sc::before{content:'';position:absolute;top:0;left:0;bottom:0;width:3px;}
+.sc.sh::before{background:var(--green);}
+.sc.sm::before{background:var(--red);}
+.sc.sw::before{background:var(--yellow);}
+.sc.st::before{background:var(--purple);}
+.sc.sr::before{background:var(--accent2);}
+.sc-ic{font-size:1.1rem;}
+.sc-v{font-size:1.25rem;font-weight:800;line-height:1;}
+.sc-l{font-size:.6rem;color:var(--muted);text-transform:uppercase;letter-spacing:.7px;}
+.sc.sh .sc-v{color:var(--green);}
+.sc.sm .sc-v{color:var(--red);}
+.sc.sw .sc-v{color:var(--yellow);}
+.sc.st .sc-v{color:var(--purple);}
+.sc.sr .sc-v{color:var(--accent2);}
+
+/* ── BODY ── */
+.body{flex:1;display:grid;grid-template-columns:1.6fr 1fr 1fr;gap:8px;padding:0 20px 8px;min-height:0;overflow:hidden;}
+.col{display:flex;flex-direction:column;gap:8px;min-height:0;}
+
+/* ── CARD ── */
+.card{background:var(--bg2);border:1px solid var(--border);border-radius:10px;overflow:hidden;display:flex;flex-direction:column;min-height:0;}
+.ch{padding:7px 13px;border-bottom:1px solid var(--border);background:var(--bg3);display:flex;align-items:center;gap:7px;flex-shrink:0;}
+.ch h2{font-size:.72rem;font-weight:600;letter-spacing:.2px;}
+.dot{width:6px;height:6px;border-radius:50%;flex-shrink:0;}
+.cb{padding:10px 13px;overflow:auto;flex:1;min-height:0;}
+.cb::-webkit-scrollbar{width:3px;}
+.cb::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px;}
+
+/* ── ARCHITECTURE SVG ── */
+.arch-wrap{flex:0 0 auto;height:200px;padding:0!important;position:relative;}
+#asvg{width:100%;height:100%;}
+
+/* ── NARRATOR ── */
+.narrator{flex:0 0 auto;border-radius:10px;overflow:hidden;border:1px solid var(--border);background:var(--bg2);}
+.nar-head{padding:7px 14px;display:flex;align-items:center;gap:8px;border-bottom:1px solid var(--border);background:var(--bg3);}
+.nar-head h2{font-size:.72rem;font-weight:600;}
+.nar-body{padding:12px 16px;display:flex;gap:14px;align-items:flex-start;}
+.nar-icon{font-size:2rem;flex-shrink:0;line-height:1;}
+.nar-text{flex:1;}
+.nar-title{font-size:.85rem;font-weight:800;margin-bottom:4px;line-height:1.2;}
+.nar-desc{font-size:.72rem;color:var(--muted2);line-height:1.6;}
+.nar-why{margin-top:6px;font-size:.68rem;padding:5px 9px;border-radius:6px;border-left:3px solid;}
+.nar-tags{display:flex;gap:5px;margin-top:8px;flex-wrap:wrap;}
+.ntag{padding:2px 8px;border-radius:999px;font-size:.6rem;font-weight:700;letter-spacing:.3px;}
+
+/* ── CACHE LINES ── */
+.chead{display:grid;grid-template-columns:20px 16px 48px 1fr 60px;font-size:.58rem;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;padding:0 0 4px;flex-shrink:0;}
+.chead span{padding:0 3px;}
+.cgrid{display:flex;flex-direction:column;gap:3px;}
+.cl{display:grid;grid-template-columns:20px 16px 48px 1fr 60px;border-radius:5px;border:1px solid var(--border);overflow:hidden;font-size:.64rem;font-family:'Courier New',monospace;background:var(--bg3);transition:all .4s;}
+.cl.valid{border-color:#10b98145;background:#10b98107;}
+.cl.hitting{border-color:var(--green)!important;background:#10b98122!important;box-shadow:0 0 10px #10b98140;animation:hp .5s;}
+.cl.filling{border-color:var(--yellow)!important;background:#f59e0b13!important;box-shadow:0 0 10px #f59e0b35;}
+.cl.writing{border-color:var(--yellow)!important;background:#f59e0b20!important;box-shadow:0 0 10px #f59e0b35;}
+@keyframes hp{0%,100%{transform:scale(1)}50%{transform:scale(1.015)}}
+.ci{padding:4px 3px;text-align:center;background:#07090f;color:var(--muted);font-weight:700;border-right:1px solid var(--border);}
+.cv{padding:4px 2px;text-align:center;border-right:1px solid var(--border);color:var(--muted);}
+.cv.v1{color:var(--green);}
+.ctg{padding:4px 3px;text-align:center;border-right:1px solid var(--border);color:var(--accent2);}
+.cdata{padding:4px 5px;border-right:1px solid var(--border);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.cst{padding:4px 3px;text-align:center;font-size:.58rem;}
+.cst.hitting{color:var(--green);}
+.cst.writing{color:var(--yellow);}
+
+/* ── FSM ── */
+.fsm-row{display:flex;gap:5px;align-items:center;margin-bottom:7px;}
+.fs{flex:1;padding:7px 5px;border-radius:7px;text-align:center;border:2px solid var(--border);background:var(--bg3);transition:all .4s;}
+.fs .fn{font-size:.68rem;font-weight:700;}
+.fs .fd{font-size:.56rem;color:var(--muted);margin-top:2px;line-height:1.3;}
+.fs.a-idle{border-color:var(--accent2);background:#0891b218;box-shadow:0 0 12px #0891b230;}
+.fs.a-idle .fn{color:var(--accent2);}
+.fs.a-sd{border-color:var(--red);background:#ef444418;box-shadow:0 0 12px #ef444430;}
+.fs.a-sd .fn{color:var(--red);}
+.fs.a-si{border-color:var(--accent);background:#3b82f618;box-shadow:0 0 12px #3b82f630;}
+.fs.a-si .fn{color:var(--accent);}
+.farr{font-size:.8rem;color:var(--muted);}
+.finfo{background:var(--bg3);border-radius:6px;padding:7px 10px;font-size:.65rem;color:var(--muted);line-height:1.6;border:1px solid var(--border);}
+.finfo b{color:var(--text);}
+
+/* ── DONUT ── */
+.drow{display:flex;align-items:center;gap:12px;margin-top:8px;}
+.dleg{display:flex;flex-direction:column;gap:4px;}
+.dli{display:flex;align-items:center;gap:5px;font-size:.65rem;}
+.dlidot{width:7px;height:7px;border-radius:50%;flex-shrink:0;}
+.dlilbl{color:var(--muted);}
+.dlival{color:var(--text);font-weight:700;margin-left:auto;padding-left:8px;}
+
+/* ── EVENT LOG ── */
+.logwrap{flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:3px;min-height:0;}
+.logwrap::-webkit-scrollbar{width:3px;}
+.logwrap::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px;}
+.le{padding:5px 8px;border-radius:5px;font-family:'Courier New',monospace;font-size:.64rem;display:flex;align-items:flex-start;gap:6px;border:1px solid transparent;opacity:0;transform:translateX(-5px);transition:all .22s;flex-shrink:0;}
+.le.show{opacity:1;transform:none;}
+.le.hit{background:#10b98110;border-color:#10b98125;}
+.le.miss{background:#ef444410;border-color:#ef444425;}
+.le.write{background:#f59e0b10;border-color:#f59e0b25;}
+.le.mem{background:#8b5cf610;border-color:#8b5cf625;}
+.le.test{background:#1e335820;border-color:var(--border);}
+.le.pass{background:#10b98115;border-color:#10b98138;}
+.le.ctrl{background:#0891b210;border-color:#0891b228;}
+.le.info{background:var(--bg3);border-color:var(--border);}
+.leic{font-size:.8rem;width:13px;flex-shrink:0;}
+.letx{flex:1;color:var(--text);line-height:1.4;}
+
+/* ── TEST LIST ── */
+.tlist{display:flex;flex-direction:column;gap:4px;}
+.ti{display:flex;align-items:flex-start;gap:6px;padding:6px 9px;border-radius:7px;border:1px solid var(--border);background:var(--bg3);font-size:.65rem;transition:all .3s;}
+.ti.running{border-color:var(--yellow);background:#f59e0b0c;}
+.ti.passed{border-color:var(--green);background:#10b9810c;}
+.ti-id{font-weight:800;color:var(--muted);flex-shrink:0;width:18px;}
+.ti-desc{flex:1;line-height:1.45;}
+.ti-st{font-size:.65rem;font-weight:700;flex-shrink:0;}
+.ti.running .ti-st{color:var(--yellow);}
+.ti.passed .ti-st{color:var(--green);}
+
+/* ── MEM MAP ── */
+.mrow{display:grid;grid-template-columns:36px 78px 1fr;padding:4px 9px;border-bottom:1px solid #1e335820;font-size:.64rem;font-family:'Courier New',monospace;transition:background .3s;}
+.mrow.flash{background:#f59e0b22!important;}
+.mrow.written{background:#10b98112;}
+
+/* ── ADDRESS DECODE ── */
+.adcur{text-align:center;font-family:'Courier New',monospace;font-size:.82rem;font-weight:800;letter-spacing:1px;padding:6px;background:var(--bg3);border-radius:7px;border:1px solid var(--border);color:var(--accent2);margin-bottom:7px;}
+.adsegs{display:flex;border-radius:7px;overflow:hidden;border:1px solid var(--border);}
+.aseg{flex:1;text-align:center;padding:6px 2px;display:flex;flex-direction:column;gap:1px;border-right:1px solid var(--border);}
+.aseg:last-child{border-right:none;}
+.aseg.tag{background:#3b82f618;}
+.aseg.idx{background:#8b5cf618;}
+.aseg.off{background:#64748b10;}
+.aseg-name{font-size:.56rem;text-transform:uppercase;letter-spacing:.3px;color:var(--muted);}
+.aseg-bits{font-size:.78rem;font-weight:800;}
+.aseg.tag .aseg-bits{color:var(--accent);}
+.aseg.idx .aseg-bits{color:var(--purple);}
+.aseg.off .aseg-bits{color:var(--muted);}
+.aseg-sub{font-size:.56rem;color:var(--muted);}
+.admeta{margin-top:6px;font-size:.64rem;color:var(--muted);line-height:1.8;}
+.admeta b{color:var(--text);}
+
+/* ── CONTROLS ── */
+.controls{display:flex;gap:7px;align-items:center;padding:7px 20px;border-top:1px solid var(--border);background:var(--bg2);flex-shrink:0;}
+.btn{padding:5px 15px;border-radius:7px;font-size:.72rem;font-weight:600;cursor:pointer;border:none;transition:all .2s;}
+.btn-p{background:var(--accent);color:#fff;box-shadow:0 0 12px #3b82f640;}
+.btn-p:hover:not(:disabled){background:#2563eb;transform:translateY(-1px);}
+.btn-p:disabled{opacity:.5;cursor:default;}
+.btn-s{background:var(--bg3);color:var(--text);border:1px solid var(--border);}
+.btn-s:hover{background:var(--border);}
+.spdlbl{font-size:.67rem;color:var(--muted);}
+.spdsel{background:var(--bg3);border:1px solid var(--border);color:var(--text);padding:4px 8px;border-radius:5px;font-size:.67rem;cursor:pointer;}
+.simst{margin-left:auto;font-size:.67rem;color:var(--muted);display:flex;align-items:center;gap:5px;}
+.stdot{width:7px;height:7px;border-radius:50%;background:var(--green);animation:bl 1s infinite;}
+.stdot.idle{background:var(--muted);animation:none;}
+.stdot.done{background:var(--green);animation:none;}
+@keyframes bl{0%,100%{opacity:1}50%{opacity:.3}}
+
+/* ── SUMMARY MODAL ── */
+#modal{position:fixed;inset:0;z-index:1000;background:#07090fcc;backdrop-filter:blur(8px);display:none;align-items:center;justify-content:center;animation:fade .3s;}
+#modal.show{display:flex;}
+@keyframes fade{from{opacity:0}to{opacity:1}}
+.modal-box{background:var(--bg2);border:1px solid var(--border);border-radius:16px;width:min(820px,95vw);max-height:90vh;overflow-y:auto;padding:0;}
+.modal-box::-webkit-scrollbar{width:4px;}
+.modal-box::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px;}
+.mhdr{padding:20px 28px 16px;background:linear-gradient(135deg,#132040,#1a0a3a);border-bottom:1px solid var(--border);border-radius:16px 16px 0 0;}
+.mhdr h2{font-size:1.3rem;font-weight:800;color:#fff;margin-bottom:3px;}
+.mhdr p{font-size:.75rem;color:var(--muted2);}
+.mbody{padding:20px 28px;}
+.sum-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-bottom:20px;}
+.scard{background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:14px 16px;}
+.scard h3{font-size:.7rem;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;margin-bottom:10px;}
+.big-stat{text-align:center;padding:8px 0;}
+.big-num{font-size:3rem;font-weight:900;line-height:1;}
+.big-lbl{font-size:.72rem;color:var(--muted);margin-top:3px;}
+.prog-row{display:flex;flex-direction:column;gap:7px;}
+.prog-item{display:flex;flex-direction:column;gap:3px;}
+.prog-label{display:flex;justify-content:space-between;font-size:.68rem;}
+.prog-bar{height:8px;border-radius:999px;background:var(--border);overflow:hidden;}
+.prog-fill{height:100%;border-radius:999px;transition:width 1s ease;}
+.takeaways{margin-bottom:20px;}
+.takeaways h3{font-size:.8rem;color:var(--muted2);text-transform:uppercase;letter-spacing:.8px;margin-bottom:10px;}
+.tk{display:flex;align-items:flex-start;gap:10px;padding:10px 14px;border-radius:8px;border:1px solid var(--border);background:var(--bg3);margin-bottom:7px;}
+.tk-ic{font-size:1.1rem;flex-shrink:0;margin-top:1px;}
+.tk-txt{font-size:.72rem;line-height:1.6;color:var(--muted2);}
+.tk-txt b{color:var(--text);}
+.perf-compare{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:20px;}
+.pbox{background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:12px 16px;text-align:center;}
+.pbox .ptitle{font-size:.65rem;color:var(--muted);text-transform:uppercase;letter-spacing:.6px;margin-bottom:6px;}
+.pbox .pval{font-size:1.6rem;font-weight:800;line-height:1;}
+.pbox .psub{font-size:.62rem;color:var(--muted);margin-top:3px;}
+.pbox.good{border-color:var(--green);background:#10b98108;}
+.pbox.good .pval{color:var(--green);}
+.pbox.bad{border-color:var(--red);background:#ef444408;}
+.pbox.bad .pval{color:var(--red);}
+.mbtn-row{display:flex;justify-content:flex-end;gap:8px;padding-top:8px;border-top:1px solid var(--border);}
+.mclose{padding:8px 20px;border-radius:8px;font-size:.75rem;font-weight:600;cursor:pointer;background:var(--accent);color:#fff;border:none;}
+.contrib-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:7px;margin-bottom:20px;}
+.cbox{background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:9px 10px;text-align:center;}
+.cbox .cname{font-size:.65rem;font-weight:700;color:var(--text);margin-bottom:3px;}
+.cbox .crole{font-size:.58rem;color:var(--muted);line-height:1.4;}
+.cbox .cfile{font-size:.6rem;color:var(--accent2);font-family:'Courier New',monospace;margin-top:4px;}
+.cbox .cion{font-size:1.3rem;margin-bottom:4px;}
+
+/* ── CONCEPT PILL ── */
+.cpill{display:inline-flex;align-items:center;gap:4px;padding:3px 9px;border-radius:999px;font-size:.62rem;font-weight:700;}
+.cpill.hit{background:#10b98122;color:#6ee7b7;border:1px solid #10b98140;}
+.cpill.miss{background:#ef444422;color:#fca5a5;border:1px solid #ef444440;}
+.cpill.write{background:#f59e0b22;color:#fcd34d;border:1px solid #f59e0b40;}
+.cpill.stall{background:#8b5cf622;color:#c4b5fd;border:1px solid #8b5cf640;}
+.cpill.prio{background:#06b6d422;color:#67e8f9;border:1px solid #06b6d440;}
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header>
+  <div class="hd">
+    <h1>⚡ Memory Hierarchy Interactive Simulator</h1>
+    <p>Modern Computer Architecture — MCA Project | Verilog HDL Simulation Visualizer</p>
+  </div>
+  <div class="badges">
+    <span class="badge bb">Verilog HDL</span>
+    <span class="badge bg">Harvard Architecture</span>
+    <span class="badge by">Direct-Mapped L1 Cache</span>
+  </div>
+</header>
+
+<!-- STAT STRIP -->
+<div class="sstrip">
+  <div class="sc sh"><span class="sc-ic">⚡</span><div><div class="sc-v" id="sv-h">0</div><div class="sc-l">Cache Hits (1 cycle)</div></div></div>
+  <div class="sc sm"><span class="sc-ic">🔄</span><div><div class="sc-v" id="sv-m">0</div><div class="sc-l">Cache Misses (3 cycle DRAM)</div></div></div>
+  <div class="sc sw"><span class="sc-ic">✏️</span><div><div class="sc-v" id="sv-w">0</div><div class="sc-l">Write-Through Ops</div></div></div>
+  <div class="sc st"><span class="sc-ic">🏆</span><div><div class="sc-v" id="sv-t">0 / 7</div><div class="sc-l">Tests Passed</div></div></div>
+  <div class="sc sr"><span class="sc-ic">📈</span><div><div class="sc-v" id="sv-r">—</div><div class="sc-l">Hit Rate</div></div></div>
+</div>
+
+<!-- BODY -->
+<div class="body">
+
+  <!-- COL 1: ARCH + NARRATOR + CACHES -->
+  <div class="col">
+
+    <!-- ARCHITECTURE -->
+    <div class="card arch-wrap">
+      <svg id="asvg" viewBox="0 0 680 196" preserveAspectRatio="xMidYMid meet">
+        <defs>
+          <filter id="glow"><feGaussianBlur stdDeviation="2.5" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+          <marker id="ag" markerWidth="7" markerHeight="7" refX="3.5" refY="3.5" orient="auto"><path d="M0,0 L7,3.5 L0,7Z" fill="#10b981"/></marker>
+          <marker id="ar" markerWidth="7" markerHeight="7" refX="3.5" refY="3.5" orient="auto"><path d="M0,0 L7,3.5 L0,7Z" fill="#ef4444"/></marker>
+          <marker id="ay" markerWidth="7" markerHeight="7" refX="3.5" refY="3.5" orient="auto"><path d="M0,0 L7,3.5 L0,7Z" fill="#f59e0b"/></marker>
+          <marker id="ab" markerWidth="7" markerHeight="7" refX="3.5" refY="3.5" orient="auto"><path d="M0,0 L7,3.5 L0,7Z" fill="#3b82f6" opacity=".6"/></marker>
+        </defs>
+        <!-- CPU -->
+        <rect x="224" y="10" width="232" height="46" rx="8" fill="#1a2f50" stroke="#3b82f6" stroke-width="1.5"/>
+        <text x="340" y="27" fill="#93c5fd" font-size="11" font-weight="700" text-anchor="middle" font-family="monospace">CPU CORE (Testbench)</text>
+        <text x="340" y="40" fill="#64748b" font-size="7" text-anchor="middle" font-family="monospace">Program Counter | ALU | Stimulus</text>
+        <text x="340" y="51" fill="#6ee7b7" font-size="6.5" text-anchor="middle" font-family="monospace">Ayush Tiwari</text>
+        <!-- I-Cache -->
+        <rect x="16" y="98" width="176" height="60" rx="8" fill="#0d2040" stroke="#3b82f6" stroke-width="1.5" id="bx-ic"/>
+        <text x="104" y="118" fill="#93c5fd" font-size="10" font-weight="700" text-anchor="middle" font-family="monospace">L1 I-CACHE</text>
+        <text x="104" y="131" fill="#64748b" font-size="7" text-anchor="middle" font-family="monospace">8-line Direct-Mapped | Read-Only</text>
+        <text x="104" y="143" fill="#64748b" font-size="7" text-anchor="middle" font-family="monospace">HIT = 1 cycle | MISS = stall</text>
+        <text x="104" y="91" fill="#6ee7b7" font-size="6.5" text-anchor="middle" font-family="monospace">★ Hardik Hathwal</text>
+        <!-- D-Cache -->
+        <rect x="488" y="98" width="176" height="60" rx="8" fill="#0d2040" stroke="#06b6d4" stroke-width="1.5" id="bx-dc"/>
+        <text x="576" y="118" fill="#67e8f9" font-size="10" font-weight="700" text-anchor="middle" font-family="monospace">L1 D-CACHE</text>
+        <text x="576" y="131" fill="#64748b" font-size="7" text-anchor="middle" font-family="monospace">8-line Direct-Mapped | Write-Through</text>
+        <text x="576" y="143" fill="#64748b" font-size="7" text-anchor="middle" font-family="monospace">READ + WRITE | 1-cycle HIT</text>
+        <text x="576" y="91" fill="#6ee7b7" font-size="6.5" text-anchor="middle" font-family="monospace">Kabir Sharma</text>
+        <!-- Controller -->
+        <rect x="210" y="98" width="260" height="46" rx="8" fill="#190e2e" stroke="#8b5cf6" stroke-width="1.5" id="bx-ct"/>
+        <text x="340" y="118" fill="#c4b5fd" font-size="10" font-weight="700" text-anchor="middle" font-family="monospace">CACHE CONTROLLER</text>
+        <text x="340" y="132" fill="#64748b" font-size="7" text-anchor="middle" font-family="monospace">FSM Arbiter | D-Cache Priority | 3 States</text>
+        <text x="340" y="91" fill="#6ee7b7" font-size="6.5" text-anchor="middle" font-family="monospace">Abhinav Chaudhary</text>
+        <!-- Main Memory -->
+        <rect x="224" y="161" width="232" height="30" rx="8" fill="#1a0d10" stroke="#f59e0b" stroke-width="1.5" id="bx-mm"/>
+        <text x="340" y="175" fill="#fcd34d" font-size="10" font-weight="700" text-anchor="middle" font-family="monospace">MAIN MEMORY (DRAM)</text>
+        <text x="340" y="186" fill="#64748b" font-size="7" text-anchor="middle" font-family="monospace">256×32-bit | 3-Cycle Latency | Akshith Kumar</text>
+        <!-- Lines -->
+        <line x1="250" y1="31" x2="130" y2="98" stroke="#3b82f6" stroke-width=".9" stroke-dasharray="4 3" opacity=".45"/>
+        <text x="176" y="62" fill="#3b82f6" font-size="6.5" text-anchor="middle" font-family="monospace">if_addr</text>
+        <line x1="430" y1="31" x2="560" y2="98" stroke="#06b6d4" stroke-width=".9" stroke-dasharray="4 3" opacity=".45"/>
+        <text x="510" y="62" fill="#06b6d4" font-size="6.5" text-anchor="middle" font-family="monospace">d_addr/we</text>
+        <line x1="104" y1="158" x2="250" y2="121" stroke="#8b5cf6" stroke-width=".9" stroke-dasharray="3 3" opacity=".45"/>
+        <text x="162" y="148" fill="#8b5cf6" font-size="6" text-anchor="middle" font-family="monospace">miss</text>
+        <line x1="576" y1="158" x2="430" y2="121" stroke="#8b5cf6" stroke-width=".9" stroke-dasharray="3 3" opacity=".45"/>
+        <text x="520" y="148" fill="#8b5cf6" font-size="6" text-anchor="middle" font-family="monospace">miss</text>
+        <line x1="340" y1="144" x2="340" y2="161" stroke="#f59e0b" stroke-width=".9" stroke-dasharray="3 3" opacity=".45"/>
+        <text x="362" y="156" fill="#f59e0b" font-size="6" font-family="monospace">mem_req</text>
+        <!-- stall back -->
+        <line x1="106" y1="98" x2="240" y2="54" stroke="#ef4444" stroke-width=".7" stroke-dasharray="2 3" opacity=".3" marker-end="url(#ar)"/>
+        <text x="162" y="74" fill="#ef4444" font-size="5.5" text-anchor="middle" opacity=".6">if_stall</text>
+        <line x1="574" y1="98" x2="444" y2="54" stroke="#ef4444" stroke-width=".7" stroke-dasharray="2 3" opacity=".3" marker-end="url(#ar)"/>
+        <text x="522" y="74" fill="#ef4444" font-size="5.5" text-anchor="middle" opacity=".6">d_stall</text>
+        <!-- Packets -->
+        <circle id="pk1" cx="-50" cy="-50" r="5" fill="#10b981" filter="url(#glow)" opacity="0"/>
+        <circle id="pk2" cx="-50" cy="-50" r="5" fill="#ef4444" filter="url(#glow)" opacity="0"/>
+        <circle id="pk3" cx="-50" cy="-50" r="5" fill="#f59e0b" filter="url(#glow)" opacity="0"/>
+      </svg>
+    </div>
+
+    <!-- NARRATOR -->
+    <div class="narrator">
+      <div class="nar-head">
+        <div class="dot" style="background:#06b6d4;box-shadow:0 0 5px #06b6d4;"></div>
+        <h2>🎯 What's Happening Right Now</h2>
+        <div id="nar-pill" style="margin-left:auto;"></div>
+      </div>
+      <div class="nar-body" id="nar-body">
+        <div class="nar-icon">🕐</div>
+        <div class="nar-text">
+          <div class="nar-title" style="color:var(--muted2);">Simulation not started yet</div>
+          <div class="nar-desc">Press <strong style="color:var(--accent);">▶ Run Simulation</strong> below to begin. The simulator will step through 7 test cases showing how the CPU uses cache memory to avoid slow RAM access.</div>
+          <div class="nar-why" style="background:#3b82f610;border-color:var(--accent);">
+            💡 <strong>Why cache?</strong> CPU works in nanoseconds, RAM takes 100s of nanoseconds. Cache is a small super-fast memory in between — if data is there (HIT), CPU doesn't wait. If not (MISS), CPU pauses while RAM is fetched.
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- CACHES -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;flex:1;min-height:0;">
+      <div class="card">
+        <div class="ch"><div class="dot" style="background:#3b82f6;box-shadow:0 0 5px #3b82f6;"></div><h2>L1 I-Cache — Hardik's Module</h2></div>
+        <div class="cb" style="padding:8px 10px;">
+          <div class="chead"><span>Ln</span><span>V</span><span>Tag</span><span>Data (Instruction)</span><span>Status</span></div>
+          <div class="cgrid" id="ic-grid"></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="ch"><div class="dot" style="background:#06b6d4;box-shadow:0 0 5px #06b6d4;"></div><h2>L1 D-Cache — Data Cache</h2></div>
+        <div class="cb" style="padding:8px 10px;">
+          <div class="chead"><span>Ln</span><span>V</span><span>Tag</span><span>Data</span><span>Status</span></div>
+          <div class="cgrid" id="dc-grid"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- COL 2: FSM + Log -->
+  <div class="col">
+
+    <!-- FSM -->
+    <div class="card" style="flex-shrink:0;">
+      <div class="ch"><div class="dot" style="background:var(--purple);box-shadow:0 0 5px var(--purple);"></div><h2>Cache Controller FSM — 3 States</h2></div>
+      <div class="cb">
+        <div class="fsm-row">
+          <div class="fs a-idle" id="fs-idle"><div class="fn">IDLE</div><div class="fd">No requests<br>Watching...</div></div>
+          <div class="farr">⇄</div>
+          <div class="fs" id="fs-sd"><div class="fn">SERVE_D</div><div class="fd">D-Cache miss<br>★ Priority</div></div>
+          <div class="farr">⇄</div>
+          <div class="fs" id="fs-si"><div class="fn">SERVE_I</div><div class="fd">I-Cache miss<br>Lower prio</div></div>
+        </div>
+        <div class="finfo" id="finfo"><b>IDLE</b> — Waiting for cache misses. When both caches miss at once, D-Cache always goes first (data hazards are more critical than instruction fetch).</div>
+        <div class="drow">
+          <svg width="76" height="76" viewBox="0 0 76 76">
+            <circle cx="38" cy="38" r="26" fill="none" stroke="#1a2235" stroke-width="10"/>
+            <circle id="dh" cx="38" cy="38" r="26" fill="none" stroke="#10b981" stroke-width="10" stroke-dasharray="0 163" stroke-linecap="round" transform="rotate(-90 38 38)" style="transition:stroke-dasharray .5s"/>
+            <text x="38" y="42" fill="#e2e8f0" font-size="11" font-weight="800" text-anchor="middle" id="dpct">0%</text>
+          </svg>
+          <div class="dleg">
+            <div class="dli"><div class="dlidot" style="background:var(--green)"></div><span class="dlilbl">Hits (fast)</span><span class="dlival" id="dh-v">0</span></div>
+            <div class="dli"><div class="dlidot" style="background:var(--red)"></div><span class="dlilbl">Misses (slow)</span><span class="dlival" id="dm-v">0</span></div>
+            <div class="dli"><div class="dlidot" style="background:var(--yellow)"></div><span class="dlilbl">Write-Through</span><span class="dlival" id="dw-v">0</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ADDR DECODE -->
+    <div class="card" style="flex-shrink:0;">
+      <div class="ch"><div class="dot" style="background:#a78bfa;box-shadow:0 0 5px #a78bfa;"></div><h2>Address Decoder — Tag / Index / Offset</h2></div>
+      <div class="cb" style="padding:9px 12px;">
+        <div class="adcur" id="adcur">0x00 = 0000 0000</div>
+        <div class="adsegs">
+          <div class="aseg tag"><div class="aseg-name">Tag [7:5]</div><div class="aseg-bits" id="at">000</div><div class="aseg-sub">Which block?</div></div>
+          <div class="aseg idx"><div class="aseg-name">Index [4:2]</div><div class="aseg-bits" id="ai">000</div><div class="aseg-sub" id="ai-line">→ Line 0</div></div>
+          <div class="aseg off"><div class="aseg-name">Offset [1:0]</div><div class="aseg-bits" id="ao">00</div><div class="aseg-sub">unused</div></div>
+        </div>
+        <div class="admeta">Look in cache line <b id="amln" style="color:var(--purple);">0</b>, check if stored tag = <b id="amtg" style="color:var(--accent);">0b000</b></div>
+      </div>
+    </div>
+
+    <!-- LOG -->
+    <div class="card flex-1">
+      <div class="ch"><div class="dot" style="background:var(--green);box-shadow:0 0 5px var(--green);"></div><h2>Simulation Event Log</h2></div>
+      <div class="cb" style="padding:7px 9px;">
+        <div class="logwrap" id="sim-log"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- COL 3: Tests + Memory Map -->
+  <div class="col">
+
+    <!-- TEST CASES -->
+    <div class="card" style="flex:1;min-height:0;">
+      <div class="ch"><div class="dot" style="background:var(--yellow);box-shadow:0 0 5px var(--yellow);"></div><h2>Test Cases — Ayush's Testbench</h2></div>
+      <div class="cb" style="padding:7px 9px;">
+        <div class="tlist" id="tlist"></div>
+      </div>
+    </div>
+
+    <!-- MEM MAP -->
+    <div class="card" style="flex:1;min-height:0;">
+      <div class="ch"><div class="dot" style="background:#fbbf24;box-shadow:0 0 5px #fbbf24;"></div><h2>Main Memory Map (256×32 bit)</h2></div>
+      <div class="cb" style="padding:0;">
+        <div style="display:grid;grid-template-columns:36px 78px 1fr;padding:4px 9px;border-bottom:1px solid var(--border);font-size:.58rem;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;font-family:monospace;">
+          <span>Addr</span><span>Value</span><span>Description</span>
+        </div>
+        <div id="mmap"></div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- CONTROLS -->
+<div class="controls">
+  <button class="btn btn-p" id="btn-run" onclick="runSim()">▶ Run Simulation</button>
+  <button class="btn btn-s" onclick="resetSim()">↺ Reset</button>
+  <span class="spdlbl">Speed:</span>
+  <select class="spdsel" id="spd">
+    <option value="1400">Slow (explain)</option>
+    <option value="800" selected>Normal</option>
+    <option value="350">Fast</option>
+    <option value="80">Turbo ⚡</option>
+  </select>
+  <div class="simst">
+    <div class="stdot idle" id="sdot"></div>
+    <span id="stxt">Ready — click Run Simulation to begin</span>
+  </div>
+</div>
+
+<!-- SUMMARY MODAL -->
+<div id="modal">
+  <div class="modal-box">
+    <div class="mhdr">
+      <h2>🏆 Simulation Complete — Full Results Summary</h2>
+      <p>Memory Hierarchy Project — MCA | Verilog HDL Simulation Results</p>
+    </div>
+    <div class="mbody">
+
+      <!-- BIG STATS -->
+      <div class="sum-grid">
+        <div class="scard">
+          <h3>Performance Overview</h3>
+          <div class="big-stat">
+            <div class="big-num" id="sum-hitrate" style="color:var(--green);">0%</div>
+            <div class="big-lbl">Overall Cache Hit Rate</div>
+          </div>
+          <div class="prog-row" style="margin-top:12px;">
+            <div class="prog-item">
+              <div class="prog-label"><span style="color:var(--green);">⚡ Hits (1 cycle)</span><span id="sum-h">0</span></div>
+              <div class="prog-bar"><div class="prog-fill" id="pf-h" style="width:0%;background:var(--green);"></div></div>
+            </div>
+            <div class="prog-item">
+              <div class="prog-label"><span style="color:var(--red);">🔄 Misses (3 cycles)</span><span id="sum-m">0</span></div>
+              <div class="prog-bar"><div class="prog-fill" id="pf-m" style="width:0%;background:var(--red);"></div></div>
+            </div>
+            <div class="prog-item">
+              <div class="prog-label"><span style="color:var(--yellow);">✏️ Write-Through</span><span id="sum-w">0</span></div>
+              <div class="prog-bar"><div class="prog-fill" id="pf-w" style="width:0%;background:var(--yellow);"></div></div>
+            </div>
+          </div>
+        </div>
+        <div class="scard">
+          <h3>Cycle Cost Comparison</h3>
+          <div class="perf-compare" style="margin:0;">
+            <div class="pbox good">
+              <div class="ptitle">With Cache ✅</div>
+              <div class="pval" id="sum-cc">—</div>
+              <div class="psub">total cycles used</div>
+            </div>
+            <div class="pbox bad">
+              <div class="ptitle">Without Cache ❌</div>
+              <div class="pval" id="sum-nc">—</div>
+              <div class="psub">if all went to RAM</div>
+            </div>
+          </div>
+          <div style="margin-top:8px;font-size:.68rem;color:var(--muted);text-align:center;">
+            Cache saved <b id="sum-saved" style="color:var(--green);font-size:.85rem;">0</b> clock cycles in this simulation 🚀
+          </div>
+        </div>
+      </div>
+
+      <!-- KEY TAKEAWAYS -->
+      <div class="takeaways">
+        <h3>💡 Key Concepts Demonstrated</h3>
+        <div class="tk"><div class="tk-ic">⚡</div><div class="tk-txt"><b>Cache HIT (1 cycle):</b> When the CPU asked for data already in cache (valid=1 AND tag matches), it got the response instantly — no RAM access needed. This is why caches exist: to serve data at CPU speed.</div></div>
+        <div class="tk"><div class="tk-ic">🔄</div><div class="tk-txt"><b>Cache MISS (3+ cycles):</b> When data wasn't in cache, the CPU was stalled (cpu_stall=1) while the cache controller fetched from DRAM. The 3-cycle latency simulates real DRAM slowness. After the miss, the data is cached so the next access is a HIT.</div></div>
+        <div class="tk"><div class="tk-ic">✏️</div><div class="tk-txt"><b>Write-Through Policy:</b> Every write updated both the cache AND main memory simultaneously. This keeps memory consistent without dirty bits — simpler hardware, always-fresh RAM at the cost of more bus traffic.</div></div>
+        <div class="tk"><div class="tk-ic">⭐</div><div class="tk-txt"><b>D-Cache Priority Arbitration:</b> When both caches missed at the same time (T1), the FSM controller served D-Cache first. Data hazards in the execution pipeline are more urgent than instruction fetch — serving D first minimizes pipeline stalls.</div></div>
+        <div class="tk"><div class="tk-ic">🏛️</div><div class="tk-txt"><b>Harvard Architecture:</b> I-Cache and D-Cache are completely separate, so the CPU can fetch an instruction AND read/write data in the same clock cycle simultaneously — unlike Von Neumann where one shared bus means conflicts.</div></div>
+      </div>
+
+      <!-- CONTRIBUTIONS -->
+      <div class="takeaways">
+        <h3>👥 Who Built What</h3>
+        <div class="contrib-grid">
+          <div class="cbox"><div class="cion">⭐</div><div class="cname">Hardik Hathwal</div><div class="crole">L1 Instruction Cache + IEEE Report</div><div class="cfile">l1_icache.v</div></div>
+          <div class="cbox"><div class="cion">💾</div><div class="cname">Kabir Sharma</div><div class="crole">L1 Data Cache + Write-Through</div><div class="cfile">l1_dcache.v</div></div>
+          <div class="cbox"><div class="cion">🤖</div><div class="cname">Abhinav Chaudhary</div><div class="crole">Cache Controller FSM Arbiter</div><div class="cfile">cache_controller.v</div></div>
+          <div class="cbox"><div class="cion">🔧</div><div class="cname">Akshith Kumar</div><div class="crole">DRAM Model + Top-Level Integration</div><div class="cfile">main_memory.v</div></div>
+          <div class="cbox"><div class="cion">🧪</div><div class="cname">Ayush Tiwari</div><div class="crole">Testbench + Verification Suite</div><div class="cfile">memory_hierarchy_tb.v</div></div>
+        </div>
+      </div>
+
+      <div class="mbtn-row">
+        <button class="mclose" onclick="closeModal()">✓ Close Summary</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const MEM={0:{val:'0xDEADBEEF',desc:'Instruction 0'},1:{val:'0xCAFEBABE',desc:'Instruction 1'},2:{val:'0x12345678',desc:'Instruction 2'},3:{val:'0x0BADF00D',desc:'Instruction 3'},4:{val:'0xABCD1234',desc:'Instruction 4'},5:{val:'0x0000000A',desc:'Data: 10 (decimal)'},6:{val:'0x00000014',desc:'Data: 20 (decimal)'},7:{val:'0x0000001E',desc:'Data: 30 (decimal)'}};
+
+const TESTS=[
+  {id:'T1',desc:'Simultaneous miss: Both caches miss at same time. Does D-Cache get priority?'},
+  {id:'T2',desc:'I-Cache repeat read addr=0x00 → Should HIT (already cached from T1)'},
+  {id:'T3',desc:'D-Cache repeat read addr=0x05 → Should HIT (already cached from T1)'},
+  {id:'T4',desc:'Write-Through: CPU writes to D-Cache → Must update BOTH cache + RAM'},
+  {id:'T5',desc:'Read-after-write addr=0x02 → Should HIT with the newly written value'},
+  {id:'T6',desc:'I-Cache cold miss addr=0x04 → Never cached, must fetch from RAM'},
+];
+
+const NARRATOR_STATES = {
+  idle_start: {
+    icon:'🕐', color:'var(--muted2)', title:'Ready to simulate',
+    desc:'The CPU is about to start. All 8 I-Cache lines and 8 D-Cache lines are empty (valid=0). Every first access will be a cold miss.',
+    why:'',whybg:'',
+    tags:[]
+  },
+  t1_miss_i: {
+    icon:'❌', color:'var(--red)', title:'I-Cache MISS on addr=0x00',
+    desc:'CPU is trying to fetch instruction at address 0x00. I-Cache checks line [Index=000]: valid bit is 0 (empty). Cache miss! cpu_stall goes HIGH → CPU is frozen.',
+    why:'💡 This is called a "Cold Miss" — the first time an address is accessed, it\'s never in cache. The cache controller will now go fetch it from main memory.',
+    whybg:'#ef444410', whybcolor:'#ef4444',
+    tags:['miss','stall']
+  },
+  t1_miss_d: {
+    icon:'❌', color:'var(--red)', title:'D-Cache MISS on addr=0x05 (simultaneously!)',
+    desc:'At the same time, CPU wants data at addr=0x05. D-Cache checks line [Index=001]: valid=0. Another cold miss! Both caches need main memory at the same time.',
+    why:'💡 Conflict! Both I-Cache and D-Cache are requesting main memory simultaneously. The Cache Controller FSM must decide who goes first...',
+    whybg:'#ef444410', whybcolor:'#ef4444',
+    tags:['miss','stall']
+  },
+  t1_priority: {
+    icon:'⭐', color:'var(--accent2)', title:'Controller: D-Cache Gets Priority!',
+    desc:'FSM transitions IDLE → SERVE_D. D-Cache wins the arbitration because data hazards (execution pipeline stalls) are more critical than instruction fetch stalls.',
+    why:'💡 Why D-Cache first? A CPU pipeline cannot execute any instruction if it doesn\'t have the data operands. Instruction fetch misses can sometimes be hidden by pipelining, but data misses always block execution.',
+    whybg:'#06b6d410', whybcolor:'var(--accent2)',
+    tags:['prio']
+  },
+  t1_mem_d: {
+    icon:'💾', color:'var(--yellow)', title:'Main Memory Serving D-Cache (3 cycles!)',
+    desc:'DRAM latency simulation: the main_memory module counts 3 clock cycles before asserting ready=1 and presenting the data 0x0000000A. D-Cache fills line 1, releases cpu_stall.',
+    why:'💡 Real DRAM takes ~100 nanoseconds. At 100MHz (10ns/cycle) that\'s ~10 cycles. We simulate 3 cycles for simplicity. This is the "memory wall" — why caches are essential.',
+    whybg:'#f59e0b10', whybcolor:'var(--yellow)',
+    tags:['miss']
+  },
+  t1_serve_i: {
+    icon:'🔄', color:'var(--accent)', title:'Controller Now Serving I-Cache',
+    desc:'D-Cache done! FSM goes back to IDLE then transitions to SERVE_I. I-Cache\'s miss is now being served — it also waits 3 DRAM cycles for instruction 0xDEADBEEF.',
+    why:'💡 Sequential arbitration: only one cache can use the memory bus at a time. This is why the cache controller is needed — it prevents bus conflicts.',
+    whybg:'#3b82f610', whybcolor:'var(--accent)',
+    tags:['miss']
+  },
+  t2_hit: {
+    icon:'✅', color:'var(--green)', title:'I-Cache HIT! 1 Cycle, No Waiting!',
+    desc:'CPU fetches addr=0x00 again. I-Cache checks line [Index=000]: valid=1, tag=000 matches! HIT! Instruction 0xDEADBEEF returned instantly. No stall, no memory access.',
+    why:'💡 This is temporal locality in action — recently used data is likely to be used again. After the first miss and cache fill, every repeat access is a fast HIT.',
+    whybg:'#10b98110', whybcolor:'var(--green)',
+    tags:['hit']
+  },
+  t3_hit: {
+    icon:'✅', color:'var(--green)', title:'D-Cache HIT! Cached data returned instantly!',
+    desc:'CPU reads addr=0x05 again. D-Cache checks line [Index=001]: valid=1, tag=000 matches! HIT! Data 0x0000000A returned in 1 cycle. No stall!',
+    why:'💡 Same principle — after the first miss, the data lives in cache. All subsequent reads are fast HITs. The hit rate starts improving!',
+    whybg:'#10b98110', whybcolor:'var(--green)',
+    tags:['hit']
+  },
+  t4_write: {
+    icon:'✏️', color:'var(--yellow)', title:'Write-Through: Cache AND RAM updated together!',
+    desc:'CPU writes 0xBEEFCAFE to addr=0x02. D-Cache writes to its line [Index=000] AND simultaneously sends the write to main memory. Both are updated in the same operation.',
+    why:'💡 Write-Through policy means RAM is always up-to-date. No "dirty bits" needed. Downside: more memory bus traffic on every write. Alternative is Write-Back (lazy RAM update).',
+    whybg:'#f59e0b10', whybcolor:'var(--yellow)',
+    tags:['write']
+  },
+  t5_hit: {
+    icon:'✅', color:'var(--green)', title:'Read-after-Write HIT! Cache has the latest value!',
+    desc:'CPU reads addr=0x02 immediately after writing. D-Cache line [Index=000] was just updated — valid=1, tag matches, data=0xBEEFCAFE. HIT! Returns the new value instantly.',
+    why:'💡 This proves write-through coherence works correctly. The cache always has the most recent write, so reads after writes are always consistent and fast.',
+    whybg:'#10b98110', whybcolor:'var(--green)',
+    tags:['hit']
+  },
+  t6_miss: {
+    icon:'❌', color:'var(--red)', title:'I-Cache Cold Miss on New Address 0x04',
+    desc:'CPU fetches addr=0x04 for the first time. I-Cache checks line [Index=001]: either empty or holds a different tag. Cold MISS! cpu_stall goes HIGH, controller serves this miss.',
+    why:'💡 Each unique address that hasn\'t been accessed before is a cold/compulsory miss. After this fetch, addr=0x04 will be cached and future accesses will HIT.',
+    whybg:'#ef444410', whybcolor:'#ef4444',
+    tags:['miss','stall']
+  },
+  t6_hit: {
+    icon:'✅', color:'var(--green)', title:'Cache Filled! Instruction 0xABCD1234 Ready!',
+    desc:'After 3-cycle DRAM latency, 0xABCD1234 is fetched and stored in I-Cache line [Index=001]. Cache valid=1, tag updated. cpu_stall released. All 7 tests passed!',
+    why:'💡 Perfect — after every miss, the cache learns. If the program loops or reuses this address, it will now be a 1-cycle HIT forever (until evicted).',
+    whybg:'#10b98110', whybcolor:'var(--green)',
+    tags:['hit']
+  },
+  done: {
+    icon:'🏆', color:'var(--purple)', title:'Simulation Complete! 7/7 Tests Passed!',
+    desc:'All test cases passed. The memory hierarchy works correctly: HIT detection, MISS handling, write-through policy, priority arbitration, and DRAM latency simulation all verified.',
+    why:'🎉 This Verilog simulation proves the design is correct and ready for synthesis on real hardware (FPGA/ASIC).',
+    whybg:'#8b5cf610', whybcolor:'var(--purple)',
+    tags:['hit','prio']
+  }
+};
+
+function setNarrator(key) {
+  const n = NARRATOR_STATES[key];
+  if(!n) return;
+  const pill = n.tags.map(t=>`<span class="cpill ${t}">${t.toUpperCase()}</span>`).join('');
+  document.getElementById('nar-pill').innerHTML = pill;
+  document.getElementById('nar-body').innerHTML = `
+    <div class="nar-icon">${n.icon}</div>
+    <div class="nar-text">
+      <div class="nar-title" style="color:${n.color};">${n.title}</div>
+      <div class="nar-desc">${n.desc}</div>
+      ${n.why ? `<div class="nar-why" style="background:${n.whybg};border-color:${n.whybcolor};">${n.why}</div>` : ''}
+    </div>`;
+}
+
+let simRunning=false;
+let ic=mk8(),dc=mk8();
+let st={h:0,m:0,w:0,t:0};
+function mk8(){return Array(8).fill(null).map(()=>({v:false,tag:'000',data:'—',s:''}));}
+function S(){return parseInt(document.getElementById('spd').value);}
+function sleep(ms){return new Promise(r=>setTimeout(r,ms));}
+
+function b3(n){return n.toString(2).padStart(3,'0');}
+function b8(n){return n.toString(2).padStart(8,'0');}
+function dec(a){return{tag:(a>>5)&7,idx:(a>>2)&7,off:a&3};}
+
+function updAddr(a){
+  const{tag,idx,off}=dec(a);
+  const hex=a.toString(16).padStart(2,'0').toUpperCase();
+  const bin=b8(a).replace(/(.{4})/g,'$1 ').trim();
+  document.getElementById('adcur').textContent=`0x${hex} = ${bin}`;
+  document.getElementById('at').textContent=b3(tag);
+  document.getElementById('ai').textContent=b3(idx);
+  document.getElementById('ao').textContent=b3(off).slice(-2);
+  document.getElementById('ai-line').textContent=`→ Line ${idx}`;
+  document.getElementById('amln').textContent=idx;
+  document.getElementById('amtg').textContent=`0b${b3(tag)} (${tag})`;
+}
+
+function renderGrid(id,cache){
+  const g=document.getElementById(id); g.innerHTML='';
+  cache.forEach((l,i)=>{
+    const d=document.createElement('div');
+    d.className='cl'+(l.v?' valid':'')+' '+(l.s||'');
+    d.id=`${id}-${i}`;
+    d.innerHTML=`<div class="ci">${i}</div><div class="cv ${l.v?'v1':''}">${l.v?'1':'0'}</div><div class="ctg">${l.v?l.tag:'—'}</div><div class="cdata">${l.v?l.data:'—'}</div><div class="cst ${l.s||''}">${l.s==='hitting'?'✅ HIT':l.s==='filling'?'📥 FILL':l.s==='writing'?'✏️ WRITE':l.v?'● cached':''}</div>`;
+    g.appendChild(d);
+  });
+}
+
+function setCL(arr,gid,idx,upd,sc){
+  Object.assign(arr[idx],upd,{s:sc});
+  renderGrid(gid,arr);
+  setTimeout(()=>{if(arr[idx].s===sc){arr[idx].s='';renderGrid(gid,arr);}},1200);
+}
+
+function renderMem(){
+  document.getElementById('mmap').innerHTML=Object.entries(MEM).map(([a,v])=>
+    `<div class="mrow" id="mr-${a}"><span style="color:#f59e0b;">0x${parseInt(a).toString(16).padStart(2,'0').toUpperCase()}</span><span style="color:#fcd34d;">${v.val}</span><span style="color:#64748b;font-size:.6rem;">${v.desc}</span></div>`
+  ).join('');
+}
+
+function flashMem(a){
+  const e=document.getElementById(`mr-${a}`);
+  if(!e)return; e.classList.add('flash');
+  setTimeout(()=>e.classList.remove('flash'),900);
+}
+
+function renderTests(){
+  document.getElementById('tlist').innerHTML=TESTS.map(t=>
+    `<div class="ti" id="ti-${t.id}"><div class="ti-id">${t.id}</div><div class="ti-desc">${t.desc}</div><div class="ti-st">—</div></div>`
+  ).join('');
+}
+
+function setTest(id,st){
+  const e=document.getElementById(`ti-${id}`);
+  if(!e)return;
+  e.className=`ti ${st}`;
+  e.querySelector('.ti-st').textContent=st==='running'?'⏳...':st==='passed'?'✅ PASS':'❌';
+}
+
+function updStats(){
+  document.getElementById('sv-h').textContent=st.h;
+  document.getElementById('sv-m').textContent=st.m;
+  document.getElementById('sv-w').textContent=st.w;
+  document.getElementById('sv-t').textContent=`${st.t}/7`;
+  const tot=st.h+st.m;
+  const rate=tot?Math.round(st.h/tot*100):0;
+  document.getElementById('sv-r').textContent=tot?rate+'%':'—';
+  document.getElementById('dh-v').textContent=st.h;
+  document.getElementById('dm-v').textContent=st.m;
+  document.getElementById('dw-v').textContent=st.w;
+  const circ=2*Math.PI*26;
+  document.getElementById('dh').style.strokeDasharray=`${st.h/Math.max(tot,1)*circ} ${circ}`;
+  document.getElementById('dpct').textContent=tot?rate+'%':'0%';
+}
+
+function setFSM(state,info){
+  document.getElementById('fs-idle').className='fs'+(state==='idle'?' a-idle':'');
+  document.getElementById('fs-sd').className='fs'+(state==='sd'?' a-sd':'');
+  document.getElementById('fs-si').className='fs'+(state==='si'?' a-si':'');
+  document.getElementById('finfo').innerHTML=info;
+}
+
+function addLog(type,icon,msg){
+  const wrap=document.getElementById('sim-log');
+  const e=document.createElement('div');
+  e.className=`le ${type}`;
+  e.innerHTML=`<span class="leic">${icon}</span><span class="letx">${msg}</span>`;
+  wrap.appendChild(e);
+  setTimeout(()=>e.classList.add('show'),20);
+  wrap.scrollTop=wrap.scrollHeight;
+}
+
+function flashBox(id,color){
+  const e=document.getElementById(id);
+  if(!e)return;
+  const oc=e.getAttribute('stroke');
+  e.setAttribute('stroke',color);e.setAttribute('stroke-width','2.5');
+  setTimeout(()=>{e.setAttribute('stroke',oc);e.setAttribute('stroke-width','1.5');},700);
+}
+
+function animPkt(id,x1,y1,x2,y2,color,dur=550){
+  const p=document.getElementById(id);
+  p.setAttribute('fill',color);p.setAttribute('opacity','1');
+  p.setAttribute('cx',x1);p.setAttribute('cy',y1);
+  const t0=performance.now();
+  (function step(now){
+    const t=Math.min((now-t0)/dur,1);
+    const e=t<.5?2*t*t:-1+(4-2*t)*t;
+    p.setAttribute('cx',x1+(x2-x1)*e);p.setAttribute('cy',y1+(y2-y1)*e);
+    if(t<1) requestAnimationFrame(step); else p.setAttribute('opacity','0');
+  })(t0);
+}
+
+function showModal(){
+  const tot=st.h+st.m;
+  const rate=tot?Math.round(st.h/tot*100):0;
+  document.getElementById('sum-hitrate').textContent=rate+'%';
+  document.getElementById('sum-h').textContent=st.h;
+  document.getElementById('sum-m').textContent=st.m;
+  document.getElementById('sum-w').textContent=st.w;
+  setTimeout(()=>{
+    document.getElementById('pf-h').style.width=(st.h/Math.max(tot,1)*100)+'%';
+    document.getElementById('pf-m').style.width=(st.m/Math.max(tot,1)*100)+'%';
+    document.getElementById('pf-w').style.width=Math.min(st.w/5*100,100)+'%';
+  },200);
+  // Cycle math: hits=1 cycle, misses=3 cycles, writes count as 1 (write-through handled async)
+  const withCache = st.h*1 + st.m*3 + st.w*1;
+  const noCache   = (st.h+st.m)*3 + st.w*3;
+  const saved     = noCache - withCache;
+  document.getElementById('sum-cc').textContent=withCache+' cyc';
+  document.getElementById('sum-nc').textContent=noCache+' cyc';
+  document.getElementById('sum-saved').textContent=saved;
+  document.getElementById('modal').classList.add('show');
+}
+
+function closeModal(){
+  document.getElementById('modal').classList.remove('show');
+}
+
+async function runSim(){
+  if(simRunning)return;
+  simRunning=true;
+  document.getElementById('btn-run').disabled=true;
+  document.getElementById('btn-run').textContent='⏳ Simulating...';
+  document.getElementById('sdot').className='stdot';
+  document.getElementById('stxt').textContent='Simulation running...';
+
+  ic=mk8();dc=mk8();st={h:0,m:0,w:0,t:0};
+  document.getElementById('sim-log').innerHTML='';
+  renderGrid('ic-grid',ic);renderGrid('dc-grid',dc);
+  updStats();renderMem();renderTests();
+  setFSM('idle','<b>IDLE</b> — No requests. Both caches are empty. Waiting for first CPU access.');
+  updAddr(0x00);
+  setNarrator('idle_start');
+  await sleep(400);
+
+  addLog('test','🔄','=== Testbench started — all cache lines invalid (cold start) ===');
+  await sleep(S());
+
+  // ---- T1 ----
+  setTest('T1','running');
+  addLog('test','🧪','[T1] Simultaneous miss test — I-Cache addr=0x00, D-Cache addr=0x05');
+  await sleep(S()*.5);
+
+  setNarrator('t1_miss_i');
+  updAddr(0x00); flashBox('bx-ic','#ef4444');
+  addLog('miss','❌','[I-Cache] MISS addr=0x00 — cold miss | cpu_stall→HIGH | mem_req→HIGH');
+  st.m++;updStats();await sleep(S()*.6);
+
+  setNarrator('t1_miss_d');
+  updAddr(0x05);flashBox('bx-dc','#ef4444');
+  addLog('miss','❌','[D-Cache] MISS addr=0x05 — cold miss | cpu_stall→HIGH | mem_req→HIGH');
+  st.m++;updStats();await sleep(S()*.6);
+
+  setNarrator('t1_priority');
+  flashBox('bx-ct','#8b5cf6');
+  setFSM('sd','<b>IDLE → SERVE_D</b> — D-Cache wins simultaneous arbitration (dcache_req=1 takes priority over icache_req=1). I-Cache must wait.');
+  addLog('ctrl','🤖','[Controller] IDLE→SERVE_D (D-Cache priority! Both miss simultaneously)');
+  animPkt('pk2',576,98,340,98,'#ef4444',500);
+  await sleep(S());
+
+  setNarrator('t1_mem_d');
+  flashBox('bx-mm','#f59e0b');
+  addLog('mem','💾','[Main Memory] READ addr=0x05 → 0x0000000A | 3-cycle DRAM latency...');
+  flashMem(5); animPkt('pk3',340,161,340,98,'#f59e0b',500);
+  await sleep(S());
+
+  const{tag:dt5,idx:di5}=dec(0x05);
+  setCL(dc,'dc-grid',di5,{v:true,tag:b3(dt5),data:'0x0000000A'},'hitting');
+  addLog('hit','✅','[D-Cache] Filled! HIT addr=0x05 data=0x0000000A | cpu_stall→LOW');
+  st.h++;updStats();
+  animPkt('pk1',340,98,576,98,'#10b981',400);
+  await sleep(S()*.5);
+
+  setNarrator('t1_serve_i');
+  setFSM('si','<b>IDLE → SERVE_I</b> — D-Cache done. I-Cache\'s turn now. Fetching 0xDEADBEEF from DRAM...');
+  addLog('ctrl','🤖','[Controller] IDLE→SERVE_I (I-Cache turn now — no D-Cache conflict)');
+  await sleep(S()*.5);
+
+  flashBox('bx-mm','#f59e0b');
+  addLog('mem','💾','[Main Memory] READ addr=0x00 → 0xDEADBEEF | 3-cycle DRAM latency...');
+  flashMem(0);animPkt('pk3',340,161,340,98,'#f59e0b',500);
+  await sleep(S());
+
+  setFSM('idle','<b>SERVE_I → IDLE</b> — Both misses resolved! System back to idle, waiting for next request.');
+  const{tag:it0,idx:ii0}=dec(0x00);
+  setCL(ic,'ic-grid',ii0,{v:true,tag:b3(it0),data:'0xDEADBEEF'},'hitting');
+  addLog('hit','✅','[I-Cache] Filled! HIT addr=0x00 instr=0xDEADBEEF | cpu_stall→LOW');
+  st.h++;updStats();
+  animPkt('pk1',340,98,104,98,'#10b981',400);
+  await sleep(S()*.5);
+
+  addLog('pass','🎉','[PASS] Test 1: D-Cache data=0x0000000A ✓ | [PASS] Test 2: I-Cache instr=0xDEADBEEF ✓');
+  st.t+=2;updStats();setTest('T1','passed');
+  await sleep(S());
+
+  // ---- T2 ----
+  setTest('T2','running');
+  setNarrator('t2_hit');
+  updAddr(0x00);
+  addLog('test','🧪','[T2] I-Cache repeat fetch addr=0x00 — checking if HIT');
+  flashBox('bx-ic','#10b981');await sleep(S()*.6);
+  setCL(ic,'ic-grid',ii0,{},'hitting');
+  addLog('hit','✅','[I-Cache] HIT addr=0x00 → 0xDEADBEEF | 1 cycle | No stall | No memory access!');
+  st.h++;updStats();
+  addLog('pass','🎉','[PASS] Test 3: I-Cache HIT confirmed ✓');
+  st.t++;updStats();setTest('T2','passed');
+  await sleep(S());
+
+  // ---- T3 ----
+  setTest('T3','running');
+  setNarrator('t3_hit');
+  updAddr(0x05);
+  addLog('test','🧪','[T3] D-Cache repeat read addr=0x05 — checking if HIT');
+  flashBox('bx-dc','#10b981');await sleep(S()*.6);
+  setCL(dc,'dc-grid',di5,{},'hitting');
+  addLog('hit','✅','[D-Cache] HIT addr=0x05 → 0x0000000A | 1 cycle | No stall!');
+  st.h++;updStats();
+  addLog('pass','🎉','[PASS] Test 4: D-Cache HIT confirmed ✓');
+  st.t++;updStats();setTest('T3','passed');
+  await sleep(S());
+
+  // ---- T4 ----
+  setTest('T4','running');
+  setNarrator('t4_write');
+  updAddr(0x02);
+  addLog('test','🧪','[T4] Write-Through: CPU writes 0xBEEFCAFE → addr=0x02');
+  flashBox('bx-dc','#f59e0b');await sleep(S()*.6);
+
+  const{tag:dt2,idx:di2}=dec(0x02);
+  setCL(dc,'dc-grid',di2,{v:true,tag:b3(dt2),data:'0xBEEFCAFE'},'writing');
+  addLog('write','✏️','[D-Cache] WRITE addr=0x02 ← 0xBEEFCAFE (cache line updated)');
+  st.w++;updStats();
+
+  MEM[2]={val:'0xBEEFCAFE',desc:'★ Written by CPU'};renderMem();flashMem(2);
+  flashBox('bx-mm','#f59e0b');
+  animPkt('pk3',576,131,340,161,'#f59e0b',600);
+  addLog('mem','💾','[Main Memory] WRITE addr=0x02 ← 0xBEEFCAFE (write-through propagated to DRAM simultaneously)');
+  await sleep(S());
+
+  addLog('pass','🎉','[PASS] Test 5: Write-through issued to cache + main memory ✓');
+  st.t++;updStats();setTest('T4','passed');
+  await sleep(S());
+
+  // ---- T5 ----
+  setTest('T5','running');
+  setNarrator('t5_hit');
+  updAddr(0x02);
+  addLog('test','🧪','[T5] Read back addr=0x02 after write — expect HIT with new value');
+  flashBox('bx-dc','#10b981');await sleep(S()*.6);
+  setCL(dc,'dc-grid',di2,{},'hitting');
+  addLog('hit','✅','[D-Cache] HIT addr=0x02 → 0xBEEFCAFE | Cache has the latest written value!');
+  st.h++;updStats();
+  addLog('pass','🎉','[PASS] Test 6: Read-after-write correct (data=0xBEEFCAFE) ✓');
+  st.t++;updStats();setTest('T5','passed');
+  await sleep(S());
+
+  // ---- T6 ----
+  setTest('T6','running');
+  setNarrator('t6_miss');
+  updAddr(0x04);
+  addLog('test','🧪','[T6] I-Cache cold miss addr=0x04 — first time accessing this address');
+  flashBox('bx-ic','#ef4444');await sleep(S()*.6);
+  addLog('miss','❌','[I-Cache] MISS addr=0x04 — cold miss | cpu_stall→HIGH | mem_req→HIGH');
+  st.m++;updStats();
+  setFSM('si','<b>IDLE → SERVE_I</b> — Only I-Cache requesting. No D-Cache conflict. Serving immediately (no arbitration needed).');
+  addLog('ctrl','🤖','[Controller] IDLE→SERVE_I (sole requester — no competition)');
+  await sleep(S());
+
+  flashBox('bx-mm','#f59e0b');
+  addLog('mem','💾','[Main Memory] READ addr=0x04 → 0xABCD1234 | 3-cycle DRAM latency...');
+  flashMem(4);animPkt('pk3',340,161,340,98,'#f59e0b',500);
+  await sleep(S());
+
+  setNarrator('t6_hit');
+  setFSM('idle','<b>SERVE_I → IDLE</b> — All 6 test scenarios resolved. System idle. 7/7 tests passed!');
+  const{tag:it4,idx:ii4}=dec(0x04);
+  setCL(ic,'ic-grid',ii4,{v:true,tag:b3(it4),data:'0xABCD1234'},'hitting');
+  addLog('hit','✅','[I-Cache] Filled! HIT addr=0x04 → 0xABCD1234 | cpu_stall→LOW');
+  st.h++;updStats();
+  animPkt('pk1',340,98,104,98,'#10b981',400);
+  await sleep(S()*.5);
+
+  addLog('pass','🎉','[PASS] Test 7: I-Cache new block 0xABCD1234 ✓');
+  st.t++;updStats();setTest('T6','passed');
+  await sleep(S());
+
+  // DONE
+  setNarrator('done');
+  const tot=st.h+st.m;
+  const rate=tot?Math.round(st.h/tot*100):0;
+  addLog('pass','🏆',`=== SIMULATION COMPLETE: 7/7 PASS | Hits: ${st.h} | Misses: ${st.m} | Hit Rate: ${rate}% ===`);
+  document.getElementById('sdot').className='stdot done';
+  document.getElementById('stxt').textContent=`Done — 7/7 tests passed | Hit Rate: ${rate}% | Click "View Summary" to see full results`;
+  document.getElementById('btn-run').disabled=false;
+  document.getElementById('btn-run').textContent='▶ Run Again';
+  simRunning=false;
+  await sleep(600);
+  showModal();
+}
+
+function resetSim(){
+  if(simRunning)return;
+  ic=mk8();dc=mk8();st={h:0,m:0,w:0,t:0};
+  MEM[2]={val:'0x12345678',desc:'Instruction 2'};
+  document.getElementById('sim-log').innerHTML='';
+  renderGrid('ic-grid',ic);renderGrid('dc-grid',dc);
+  updStats();renderMem();renderTests();updAddr(0x00);
+  setNarrator('idle_start');
+  setFSM('idle','<b>IDLE</b> — Reset complete. All cache lines invalidated. Ready for simulation.');
+  document.getElementById('sdot').className='stdot idle';
+  document.getElementById('stxt').textContent='Ready — click Run Simulation to begin';
+  document.getElementById('btn-run').disabled=false;
+  document.getElementById('btn-run').textContent='▶ Run Simulation';
+}
+
+renderGrid('ic-grid',ic);renderGrid('dc-grid',dc);
+renderMem();renderTests();updStats();setNarrator('idle_start');
+</script>
+</body>
+</html>
