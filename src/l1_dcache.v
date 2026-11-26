@@ -99,6 +99,7 @@ module l1_dcache (
                 cache_valid[index] <= 1'b1;
                 // Write through to main memory always
                 mem_we      <= 1;
+                mem_req     <= 1;
                 mem_addr    <= cpu_addr;
                 mem_wr_data <= cpu_wr_data;
             end

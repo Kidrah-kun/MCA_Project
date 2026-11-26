@@ -3,7 +3,7 @@
 *.lxt
 *.vvp
 *.out
-sim/memory_hierarchy
+sim/memory_hierarchy*
 sim/waveforms/*.vcd
 
 # Compiled objects
